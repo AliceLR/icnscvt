@@ -44,12 +44,12 @@ static const uint8_t not_b[] =
 
 UNITTEST(format_jp2_icns_is_file_jp2)
 {
-  ASSERTEQ(icns_is_file_jp2(jp2_a, sizeof(jp2_a)), true);
-  ASSERTEQ(icns_is_file_jp2(jp2_b, sizeof(jp2_b)), true);
+  ASSERTEQ(icns_is_file_jp2(jp2_a, sizeof(jp2_a)), true, "");
+  ASSERTEQ(icns_is_file_jp2(jp2_b, sizeof(jp2_b)), true, "");
 
-  ASSERTEQ(icns_is_file_jp2(jp2_a, 3), false);
-  ASSERTEQ(icns_is_file_jp2(jp2_b, 11), false);
-  ASSERTEQ(icns_is_file_jp2(not_a, sizeof(not_a)), false);
-  ASSERTEQ(icns_is_file_jp2(not_b, sizeof(not_b)), false);
-  ASSERTEQ(icns_is_file_jp2("", 0), false);
+  ASSERTEQ(icns_is_file_jp2(jp2_a, 3), false, "");
+  ASSERTEQ(icns_is_file_jp2(jp2_b, 11), false, "");
+  ASSERTEQ(icns_is_file_jp2(not_a, sizeof(not_a)), false, "");
+  ASSERTEQ(icns_is_file_jp2(not_b, sizeof(not_b)), false, "");
+  ASSERTEQ(icns_is_file_jp2("", 0), false, "");
 }

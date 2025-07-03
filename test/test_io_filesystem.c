@@ -44,13 +44,13 @@ UNITTEST(io_get_file_type)
   int ret;
 
   ret = icns_get_file_type(DATA_DIR "/dirent/a_file");
-  ASSERTEQ(ret, IO_REG);
+  ASSERTEQ(ret, IO_REG, "not a file");
   ret = icns_get_file_type(DATA_DIR "/dirent/a_dir");
-  ASSERTEQ(ret, IO_DIR);
+  ASSERTEQ(ret, IO_DIR, "not a dir");
   ret = icns_get_file_type(".");
-  ASSERTEQ(ret, IO_DIR);
+  ASSERTEQ(ret, IO_DIR, "not a dir");
   ret = icns_get_file_type(DATA_DIR "/dirent/wjerjejkdsjfd");
-  ASSERTEQ(ret, IO_NOTEXIST);
+  ASSERTEQ(ret, IO_NOTEXIST, "shouldn't exist");
 #endif
 }
 
@@ -120,13 +120,13 @@ UNITTEST(io_mkdir)
   memset(&icns, 0, sizeof(icns));
   check_init(&icns);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_test"), IO_NOTEXIST);
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_file"), IO_NOTEXIST);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_test"), IO_NOTEXIST, "");
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_file"), IO_NOTEXIST, "");
 
   ret = icns_mkdir(&icns, TEMP_DIR "/mkdir_test");
   check_ok(&icns, ret);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_test"), IO_DIR);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_test"), IO_DIR, "");
 
   /* Can't mkdir over existing dir */
   ret = icns_mkdir(&icns, TEMP_DIR "/mkdir_test");
@@ -136,7 +136,7 @@ UNITTEST(io_mkdir)
   ASSERT(f, "failed to open mkdir file");
   fclose(f);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_file"), IO_FILE);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_file"), IO_FILE, "");
 
   /* Can't mkdir over existing file */
   ret = icns_mkdir(&icns, TEMP_DIR "/mkdir_file");
@@ -154,25 +154,25 @@ UNITTEST(io_unlink)
   memset(&icns, 0, sizeof(icns));
   check_init(&icns);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_NOTEXIST);
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_NOTEXIST);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_NOTEXIST, "");
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_NOTEXIST, "");
 
   f = fopen(TEMP_DIR "/unlink_file", "w");
   ASSERT(f, "failed to open unlink file");
   fclose(f);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_FILE);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_FILE, "");
 
   ret = icns_mkdir(&icns, TEMP_DIR "/unlink_dir");
   check_ok(&icns, ret);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_DIR);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_DIR, "");
 
   /* Should be able to unlink file */
   ret = icns_unlink(&icns, TEMP_DIR "/unlink_file");
   check_ok(&icns, ret);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_NOTEXIST);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_NOTEXIST, "");
 
   /* Can't unlink nonexistent file */
   ret = icns_unlink(&icns, TEMP_DIR "/unlink_file");
@@ -182,7 +182,7 @@ UNITTEST(io_unlink)
   ret = icns_unlink(&icns, TEMP_DIR "/unlink_dir");
   check_error(&icns, ret, ICNS_FILESYSTEM_ERROR);
 
-  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_DIR);
+  ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_dir"), IO_DIR, "");
 #endif
 }
 
@@ -224,11 +224,11 @@ UNITTEST(io_read_directory)
   memset(&icns, 0, sizeof(icns));
   check_init(&icns);
 
-  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent"), IO_DIR);
-  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/README"), IO_FILE);
-  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/a_file"), IO_FILE);
-  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/a_dir"), IO_DIR);
-  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/whatever"), IO_NOTEXIST);
+  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent"), IO_DIR, "");
+  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/README"), IO_FILE, "");
+  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/a_file"), IO_FILE, "");
+  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/a_dir"), IO_DIR, "");
+  ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent/whatever"), IO_NOTEXIST, "");
 
   ret = icns_read_directory(&icns, &base, DATA_DIR "/dirent");
   check_ok(&icns, ret);

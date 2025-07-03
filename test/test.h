@@ -98,10 +98,10 @@ static inline void clear_error(struct icns_data *icns)
 #define check_init(icns) \
   do { \
     ASSERTEQ((icns)->io.type, IO_NONE, "%d != %d", (icns)->io.type, IO_NONE); \
-    ASSERTEQ((icns)->read_priv, NULL); \
-    ASSERTEQ((icns)->read_fn, NULL); \
-    ASSERTEQ((icns)->write_priv, NULL); \
-    ASSERTEQ((icns)->write_fn, NULL); \
+    ASSERTEQ((icns)->read_priv, NULL, ""); \
+    ASSERTEQ((icns)->read_fn, NULL, ""); \
+    ASSERTEQ((icns)->write_priv, NULL, ""); \
+    ASSERTEQ((icns)->write_fn, NULL, ""); \
   } while(0)
 
 #define check_ok(icns, ret) \

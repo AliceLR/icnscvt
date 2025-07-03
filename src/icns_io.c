@@ -59,6 +59,7 @@ enum icns_error icns_io_init_read(struct icns_data *icns,
   icns->io.type = IO_CALLBACK;
   icns->read_priv = read_priv;
   icns->read_fn = read_fn;
+  icns->bytes_in = 0;
   return ICNS_OK;
 }
 
@@ -94,6 +95,7 @@ enum icns_error icns_io_init_write(struct icns_data *icns,
   icns->io.type = IO_CALLBACK;
   icns->write_priv = write_priv;
   icns->write_fn = write_fn;
+  icns->bytes_out = 0;
   return ICNS_OK;
 }
 
@@ -292,9 +294,11 @@ void icns_io_end(struct icns_data *icns)
 
   icns->read_priv = NULL;
   icns->read_fn = NULL;
+  icns->bytes_in = 0;
 
   icns->write_priv = NULL;
   icns->write_fn = NULL;
+  icns->bytes_out = 0;
 }
 
 /**
@@ -309,13 +313,16 @@ void icns_io_end(struct icns_data *icns)
 enum icns_error icns_read_direct(struct icns_data *icns,
  uint8_t *dest, size_t count)
 {
+  size_t count_in;
   if(!icns->read_fn)
   {
     E_("reader is NULL");
     return ICNS_INTERNAL_ERROR;
   }
 
-  if(icns->read_fn(dest, count, icns->read_priv) < count)
+  count_in = icns->read_fn(dest, count, icns->read_priv);
+  icns->bytes_in += count_in;
+  if(count_in < count)
   {
     E_("failed to read file into buffer");
     return ICNS_READ_ERROR;
@@ -377,13 +384,16 @@ enum icns_error icns_load_direct(struct icns_data *icns,
 enum icns_error icns_write_direct(struct icns_data *icns,
  const uint8_t *src, size_t count)
 {
+  size_t count_out;
   if(!icns->write_fn)
   {
     E_("writer is NULL");
     return ICNS_INTERNAL_ERROR;
   }
 
-  if(icns->write_fn(src, count, icns->write_priv) < count)
+  count_out = icns->write_fn(src, count, icns->write_priv);
+  icns->bytes_out += count_out;
+  if(count_out < count)
   {
     E_("write of size %zu failed", count);
     return ICNS_WRITE_ERROR;

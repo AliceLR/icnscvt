@@ -140,9 +140,11 @@ struct icns_data
 
   void *read_priv;
   size_t (*read_fn)(void *, size_t, void *);
+  size_t bytes_in;
 
   void *write_priv;
   size_t (*write_fn)(const void *, size_t, void *);
+  size_t bytes_out;
 
   void *err_priv;
   void (*err_fn)(const char *);

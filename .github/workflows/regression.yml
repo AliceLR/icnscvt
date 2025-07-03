@@ -1,0 +1,23 @@
+name: Regression tests
+
+env:
+  PACKAGES_DEBIAN: pkgconf libpng-dev libopenjp2-7-dev
+  MAKE: "make -j4"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y --no-install-recommends $PACKAGES_DEBIAN
+      - uses: actions/checkout@v4
+      - name: Build
+        run: $MAKE
+      - name: Test
+        run: $MAKE test

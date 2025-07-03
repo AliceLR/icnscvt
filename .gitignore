@@ -1,0 +1,6 @@
+src/.build
+test/.build
+/.clangd
+/icnscvt*
+/libicnscvt*
+/test/tmp

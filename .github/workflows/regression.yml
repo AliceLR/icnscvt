@@ -21,3 +21,31 @@ jobs:
         run: $MAKE
       - name: Test
         run: $MAKE test
+
+  AddressSanitizer:
+    runs-on: ubuntu-latest
+    env:
+      CFLAGS: -O3 -fsanitize=address -fno-omit-frame-pointer -g
+      LDFLAGS: -O3 -fsanitize=address -fno-omit-frame-pointer -g
+    steps:
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y --no-install-recommends $PACKAGES_DEBIAN
+      - uses: actions/checkout@v4
+      - name: Build
+        run: $MAKE
+      - name: Test
+        run: $MAKE test
+
+  UndefinedBehaviorSanitizer:
+    runs-on: ubuntu-latest
+    env:
+      CFLAGS: -O3 -fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -g
+      LDFLAGS: -O3 -fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -g
+    steps:
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y --no-install-recommends $PACKAGES_DEBIAN
+      - uses: actions/checkout@v4
+      - name: Build
+        run: $MAKE
+      - name: Test
+        run: $MAKE test

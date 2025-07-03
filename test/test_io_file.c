@@ -341,14 +341,19 @@ UNITTEST(io_icns_read_direct)
    * This might be different for user callbacks. */
   ret = icns_read_direct(&icns, buf, 0);
   check_ok(&icns, ret);
+  ASSERTEQ(icns.bytes_in, 0, "%zu", icns.bytes_in);
 
   ret = icns_read_direct(&icns, buf, sizeof(test_data));
   check_ok(&icns, ret);
   ASSERTMEM(buf, test_data, sizeof(test_data), "");
+  ASSERTEQ(icns.bytes_in, sizeof(test_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_data));
 
   /* Can't read past end. */
   ret = icns_read_direct(&icns, buf, 1);
   check_error(&icns, ret, ICNS_READ_ERROR);
+  ASSERTEQ(icns.bytes_in, sizeof(test_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_data));
 
   icns_io_end(&icns);
   check_init(&icns);
@@ -380,11 +385,14 @@ UNITTEST(io_icns_load_direct)
   check_ok(&icns, ret);
   ASSERT(buf, "didn't set return buffer");
   free(buf);
+  ASSERTEQ(icns.bytes_in, 0, "%zu", icns.bytes_in);
 
   ret = icns_load_direct(&icns, &buf, sizeof(test_data));
   check_ok(&icns, ret);
   ASSERT(buf, "didn't set return buffer");
   ASSERTMEM(buf, test_data, sizeof(test_data), "");
+  ASSERTEQ(icns.bytes_in, sizeof(test_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_data));
   free(buf);
 
   /* Can't read past end. */
@@ -392,6 +400,8 @@ UNITTEST(io_icns_load_direct)
   ret = icns_load_direct(&icns, &buf, 1);
   check_error(&icns, ret, ICNS_READ_ERROR);
   ASSERT(!buf, "return buffer should still be null");
+  ASSERTEQ(icns.bytes_in, sizeof(test_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_data));
 
   icns_io_end(&icns);
   check_init(&icns);
@@ -419,14 +429,19 @@ UNITTEST(io_icns_write_direct)
    * This might be different for user callbacks. */
   ret = icns_write_direct(&icns, test_data, 0);
   check_ok(&icns, ret);
+  ASSERTEQ(icns.bytes_out, 0, "%zu", icns.bytes_out);
 
   ret = icns_write_direct(&icns, test_data, sizeof(test_data));
   check_ok(&icns, ret);
   ASSERTMEM(buf, test_data, sizeof(test_data), "");
+  ASSERTEQ(icns.bytes_out, sizeof(test_data),
+   "%zu != %zu", icns.bytes_out, sizeof(test_data));
 
   /* Can't write past end. */
   ret = icns_write_direct(&icns, test_data, 1);
   check_error(&icns, ret, ICNS_WRITE_ERROR);
+  ASSERTEQ(icns.bytes_out, sizeof(test_data),
+   "%zu != %zu", icns.bytes_out, sizeof(test_data));
 
   icns_io_end(&icns);
   check_init(&icns);
@@ -468,6 +483,7 @@ UNITTEST(io_icns_read_chunk_header)
     struct icns_chunk_header expected = test_chunk_unpacked[i];
     ret = icns_read_chunk_header(&icns, &buf);
     check_ok(&icns, ret);
+    ASSERTEQ(icns.bytes_in, (i + 1) * 8, "i = %zu", i);
 
     ASSERTEQ(buf.magic, expected.magic,
      "%" PRIx32 " != %" PRIx32, buf.magic, expected.magic);
@@ -507,6 +523,7 @@ UNITTEST(io_icns_write_chunk_header)
     struct icns_chunk_header chunk = test_chunk_unpacked[i];
     ret = icns_write_chunk_header(&icns, chunk.magic, chunk.length);
     check_ok(&icns, ret);
+    ASSERTEQ(icns.bytes_out, (i + 1) * 8, "i = %zu", i);
   }
   ASSERTMEM(test_chunk_raw, buf, sizeof(buf), "");
 
@@ -514,13 +531,17 @@ UNITTEST(io_icns_write_chunk_header)
   ret = icns_write_chunk_header(&icns, 123, 456);
   check_error(&icns, ret, ICNS_WRITE_ERROR);
   ASSERTMEM(test_chunk_raw, buf, sizeof(buf), "");
+  ASSERTEQ(icns.bytes_out, sizeof(buf),
+   "%zu != %zu", icns.bytes_out, sizeof(buf));
 
 #if SIZE_MAX > UINT32_MAX
   /* 64-bit: also should not be able to write with data size > UINT32_MAX */
   data.pos = 0;
+  icns.bytes_out = 0;
   ret = icns_write_chunk_header(&icns, 12345, SIZE_MAX);
   check_error(&icns, ret, ICNS_DATA_ERROR);
-  ASSERTEQ(data.pos, 0, "");
+  ASSERTEQ(data.pos, 0, "%zu", data.pos);
+  ASSERTEQ(icns.bytes_out, 0, "%zu", icns.bytes_out);
 #endif
 
   icns_io_end(&icns);

@@ -100,8 +100,10 @@ static inline void clear_error(struct icns_data *icns)
     ASSERTEQ((icns)->io.type, IO_NONE, "%d != %d", (icns)->io.type, IO_NONE); \
     ASSERTEQ((icns)->read_priv, NULL, ""); \
     ASSERTEQ((icns)->read_fn, NULL, ""); \
+    ASSERTEQ((icns)->bytes_in, 0, ""); \
     ASSERTEQ((icns)->write_priv, NULL, ""); \
     ASSERTEQ((icns)->write_fn, NULL, ""); \
+    ASSERTEQ((icns)->bytes_out, 0, ""); \
   } while(0)
 
 #define check_ok(icns, ret) \

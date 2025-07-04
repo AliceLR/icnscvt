@@ -36,8 +36,14 @@
 #define ICNS_END_DECLS
 #endif
 
+#ifndef RESTRICT
 #define RESTRICT restrict
-#define NOT_NULL __attribute__((nonnull))
+#endif
+#define NOT_NULL            __attribute__((nonnull))
+#define NOT_NULL_1(a)       __attribute__((nonnull((a))))
+#define NOT_NULL_2(a,b)     __attribute__((nonnull((a),(b))))
+#define NOT_NULL_3(a,b,c)   __attribute__((nonnull((a),(b),(c))))
+#define NOT_NULL_4(a,b,c,d) __attribute__((nonnull((a),(b),(c),(d))))
 
 ICNS_BEGIN_DECLS
 

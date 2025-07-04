@@ -42,7 +42,7 @@ static const uint8_t not_b[] =
   0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a
 };
 
-UNITTEST(format_jp2_icns_is_file_jp2)
+UNITTEST(jp2_icns_is_file_jp2)
 {
   ASSERTEQ(icns_is_file_jp2(jp2_a, sizeof(jp2_a)), true, "");
   ASSERTEQ(icns_is_file_jp2(jp2_b, sizeof(jp2_b)), true, "");

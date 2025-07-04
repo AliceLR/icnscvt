@@ -208,14 +208,6 @@ enum icns_error icns_add_image_for_format(struct icns_data *icns,
   struct icns_image *image;
   enum icns_error ret;
 
-  if(!icns)
-    return ICNS_INTERNAL_ERROR;
-  if(!format)
-  {
-    E_("can't create image for null format");
-    return ICNS_INTERNAL_ERROR;
-  }
-
   image = icns_get_image_by_format(icns, format);
   if(image)
   {

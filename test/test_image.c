@@ -424,16 +424,6 @@ UNITTEST(image_icns_add_image_for_format)
   memset(&icns, 0, sizeof(icns));
   check_init(&icns);
 
-  /* This function accepts NULL, make sure this is rejected. */
-  ret = icns_add_image_for_format(NULL, &image, image2, &format_abcd);
-  ASSERTEQ(ret, ICNS_INTERNAL_ERROR, "");
-
-  /* Refuse to create image for null format. */
-  ret = icns_add_image_for_format(&icns, &image, NULL, NULL);
-  check_error(&icns, ret, ICNS_INTERNAL_ERROR);
-  ASSERTEQ(icns.images.head, NULL, "");
-  ASSERTEQ(icns.images.tail, NULL, "");
-
   /* Add for format--ok. */
   ret = icns_add_image_for_format(&icns, &image, NULL, &format_abcd);
   check_ok(&icns, ret);

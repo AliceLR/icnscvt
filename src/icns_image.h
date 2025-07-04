@@ -77,7 +77,7 @@ struct icns_image *icns_get_image_by_format(struct icns_data *icns,
  const struct icns_format *format) NOT_NULL;
 enum icns_error icns_add_image_for_format(struct icns_data *icns,
  struct icns_image **dest, struct icns_image *insert_after,
- const struct icns_format *format);
+ const struct icns_format *format) NOT_NULL_2(1,4);
 enum icns_error icns_delete_image_by_format(struct icns_data *icns,
  const struct icns_format *format) NOT_NULL;
 void icns_delete_all_images(struct icns_data *icns) NOT_NULL;

@@ -133,18 +133,19 @@ struct icns_format_option
 };
 
 size_t icns_get_format_string(void *dest, size_t dest_len,
- uint32_t magic, const struct icns_format *format);
+ uint32_t magic, const struct icns_format *format) NOT_NULL;
 
 const struct icns_format *icns_get_format_by_magic(uint32_t magic);
-const struct icns_format *icns_get_format_by_name(const char *name);
-const struct icns_format *icns_get_mask_for_format(const struct icns_format *format);
+const struct icns_format *icns_get_format_by_name(const char *name) NOT_NULL;
+const struct icns_format *icns_get_mask_for_format(
+ const struct icns_format *format) NOT_NULL;
 
 bool icns_format_supports_input(const struct icns_format *format,
- enum icns_target_type input_target);
+ enum icns_target_type input_target) NOT_NULL;
 bool icns_format_supports_output(const struct icns_format *format,
- enum icns_target_type output_target);
-bool icns_format_is_mask(const struct icns_format *format);
-bool icns_format_supports_jpeg_2000(const struct icns_format *format);
+ enum icns_target_type output_target) NOT_NULL;
+bool icns_format_is_mask(const struct icns_format *format) NOT_NULL;
+bool icns_format_supports_jpeg_2000(const struct icns_format *format) NOT_NULL;
 
 ICNS_END_DECLS
 

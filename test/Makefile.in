@@ -26,7 +26,7 @@ check: test
 .PHONY: test check clean test_clean
 
 ${test_obj}:
-	mkdir "$@"
+	${MKDIR} "$@"
 
 ${test_obj}/%.o: ${test_src}/%.c
 	${CC} -MD ${CFLAGS} -c $< -o $@

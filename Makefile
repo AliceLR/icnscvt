@@ -22,6 +22,8 @@ ARFLAGS		+=
 CC		?= cc
 AR		?= ar
 RANLIB		?= ranlib
+MKDIR		?= mkdir
+RM		?= rm
 
 static_target	= libicnscvt.a
 shared_target	= libicnscvt.lo
@@ -56,7 +58,7 @@ all: ${static_target}
 .PHONY: all clean
 
 ${src_obj}:
-	mkdir "$@"
+	${MKDIR} "$@"
 
 ${src_obj}/%.o: ${src}/%.c
 	${CC} -MD ${CFLAGS} -c $< -o $@

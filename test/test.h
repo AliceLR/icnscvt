@@ -114,6 +114,14 @@ static inline void clear_error(struct icns_data *icns)
     ASSERT(!(icns)->is_warning, "warning state is set"); \
   } while(0)
 
+#define check_ok_var(icns, ret, expected) \
+  do { \
+    ASSERTEQ(ret, expected, "%d != %d", ret, expected); \
+    ASSERT((icns)->num_errors == 0, "error messages are set"); \
+    ASSERT(!(icns)->is_error, "error state is set"); \
+    ASSERT(!(icns)->is_warning, "warning state is set"); \
+  } while(0)
+
 #define check_warning(icns) \
   do { \
     ASSERT((icns)->num_errors > 0, "no error messages set"); \

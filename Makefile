@@ -38,9 +38,9 @@ src_obj		= ${src}/.build
 #		  ${src_obj}/icns_8bit.o \
 #		  ${src_obj}/icns_argb.o \
 #		  ${src_obj}/icns_format.o \
-#		  ${src_obj}/icns_image.o \
 
 static_objs	= \
+		  ${src_obj}/icns_image.o \
 		  ${src_obj}/icns_io.o \
 		  ${src_obj}/icns_jp2.o \
 

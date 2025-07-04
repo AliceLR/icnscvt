@@ -11,6 +11,7 @@ test_srcs	= \
 		${test_src}/test_io.c \
 		${test_src}/test_io_file.c \
 		${test_src}/test_io_filesystem.c \
+		${test_src}/test_image.c \
 		${test_src}/test_format_jp2.c \
 
 test_objs	= \

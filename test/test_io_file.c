@@ -504,6 +504,7 @@ UNITTEST(io_icns_write_chunk_header)
   enum icns_error ret;
   uint8_t buf[sizeof(test_chunk_raw)];
   struct test_write_data data = { buf, 0, sizeof(buf) };
+  struct icns_chunk_header c;
   size_t i;
 
   struct icns_data icns;
@@ -511,7 +512,9 @@ UNITTEST(io_icns_write_chunk_header)
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
-  ret = icns_write_chunk_header(&icns, 1, 2);
+  c.magic = 1;
+  c.length = 2;
+  ret = icns_write_chunk_header(&icns, &c);
   check_error(&icns, ret, ICNS_INTERNAL_ERROR);
 
   ret = icns_io_init_write(&icns, &data, test_write_func);
@@ -520,29 +523,20 @@ UNITTEST(io_icns_write_chunk_header)
 
   for(i = 0; i < num_test_chunks; i++)
   {
-    struct icns_chunk_header chunk = test_chunk_unpacked[i];
-    ret = icns_write_chunk_header(&icns, chunk.magic, chunk.length);
+    ret = icns_write_chunk_header(&icns, &test_chunk_unpacked[i]);
     check_ok(&icns, ret);
     ASSERTEQ(icns.bytes_out, (i + 1) * 8, "i = %zu", i);
   }
   ASSERTMEM(test_chunk_raw, buf, sizeof(buf), "");
 
   /* Can't write past end. */
-  ret = icns_write_chunk_header(&icns, 123, 456);
+  c.magic = 123;
+  c.length = 456;
+  ret = icns_write_chunk_header(&icns, &c);
   check_error(&icns, ret, ICNS_WRITE_ERROR);
   ASSERTMEM(test_chunk_raw, buf, sizeof(buf), "");
   ASSERTEQ(icns.bytes_out, sizeof(buf),
    "%zu != %zu", icns.bytes_out, sizeof(buf));
-
-#if SIZE_MAX > UINT32_MAX
-  /* 64-bit: also should not be able to write with data size > UINT32_MAX */
-  data.pos = 0;
-  icns.bytes_out = 0;
-  ret = icns_write_chunk_header(&icns, 12345, SIZE_MAX);
-  check_error(&icns, ret, ICNS_DATA_ERROR);
-  ASSERTEQ(data.pos, 0, "%zu", data.pos);
-  ASSERTEQ(icns.bytes_out, 0, "%zu", icns.bytes_out);
-#endif
 
   icns_io_end(&icns);
   check_init(&icns);

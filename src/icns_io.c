@@ -430,33 +430,25 @@ enum icns_error icns_read_chunk_header(struct icns_data *icns,
  * Write a chunk header to the currently open stream.
  *
  * @param icns        current state data.
- * @param magic       magic string of the chunk (big endian).
- * @param size        size of the chunk to write.
+ * @param src         chunk header to write to file.
  * @return            `ICNS_OK` on success, `ICNS_DATA_ERROR` if the size is
  *                    larger than `UINT32_MAX`, otherwise `ICNS_WRITE_ERROR`
  *                    or `ICNS_INTERNAL_ERROR`.
  */
 enum icns_error icns_write_chunk_header(struct icns_data *icns,
- uint32_t magic, size_t size)
+ const struct icns_chunk_header *src)
 {
   uint8_t header[8];
   enum icns_error ret;
 
-#if SIZE_MAX > UINT32_MAX
-  if(size > UINT32_MAX)
-  {
-    E_("file size %zu exceeds maximum chunk size", size);
-    return ICNS_DATA_ERROR;
-  }
-#endif
-
-  icns_put_u32be(header + 0, magic);
-  icns_put_u32be(header + 4, size);
+  icns_put_u32be(header + 0, src->magic);
+  icns_put_u32be(header + 4, src->length);
 
   ret = icns_write_direct(icns, header, 8);
   if(ret)
   {
-    E_("failed to write chunk header: %08" PRIx32 " %zu", magic, size);
+    E_("failed to write chunk header: %08" PRIx32 " %" PRIu32,
+     src->magic, src->length);
     return ret;
   }
   return ICNS_OK;

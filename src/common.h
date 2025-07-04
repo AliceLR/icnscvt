@@ -92,7 +92,7 @@ struct icns_data;
 struct icns_format;
 struct icns_image;
 
-struct icns_toc_entry
+struct icns_chunk_header
 {
   uint32_t magic;
   uint32_t length;
@@ -105,7 +105,7 @@ struct icns_image_set
   struct icns_image *tail;
   unsigned num_images;
 
-  struct icns_toc_entry toc[ICNS_MAX_TOC];
+  struct icns_chunk_header toc[ICNS_MAX_TOC];
   unsigned num_toc;
 };
 

@@ -24,12 +24,6 @@
 
 ICNS_BEGIN_DECLS
 
-struct icns_chunk_header
-{
-  uint32_t magic;
-  uint32_t length;
-};
-
 NOT_NULL
 static inline void icns_put_u32be(uint8_t *buf, uint32_t v)
 {
@@ -72,7 +66,7 @@ enum icns_error icns_write_direct(struct icns_data *icns,
 enum icns_error icns_read_chunk_header(struct icns_data *icns,
  struct icns_chunk_header *dest) NOT_NULL;
 enum icns_error icns_write_chunk_header(struct icns_data *icns,
- uint32_t magic, size_t size) NOT_NULL;
+ const struct icns_chunk_header *src) NOT_NULL;
 
 /* Filesystem functions for .iconset read/write. */
 struct icns_dir_entry

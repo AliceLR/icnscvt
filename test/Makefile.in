@@ -12,10 +12,19 @@ test_srcs	= \
 		${test_src}/test_io_file.c \
 		${test_src}/test_io_filesystem.c \
 		${test_src}/test_image.c \
+		${test_src}/test_targa.c \
 		${test_src}/test_jp2.c \
+
+# png
+# format
+# formats
+# icns/iconset/external
+# api
+# cli
 
 test_objs	= \
 		${test_obj}/test.o \
+		${test_obj}/targa.o \
 		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_srcs}))
 
 test: ${test_target}
@@ -30,7 +39,7 @@ ${test_obj}:
 	${MKDIR} "$@"
 
 ${test_obj}/%.o: ${test_src}/%.c
-	${CC} -MD ${CFLAGS} -c $< -o $@
+	${CC} -MD ${CFLAGS} ${ZLIB_CFLAGS} -c $< -o $@
 
 ${test_obj}/test.o: ${test_src}/testdecls.h
 
@@ -46,7 +55,7 @@ ${test_objs}: $(filter-out $(wildcard ${test_obj}), ${test_obj})
 -include ${test_objs:.o=.d}
 
 icnscvt-test: ${test_objs} ${static_target}
-	${CC} ${LDFLAGS} $^ -o $@ ${LIBS}
+	${CC} ${LDFLAGS} $^ -o $@ ${LIBS} ${ZLIB_LIBS}
 
 test_clean:
 	${RM} -f ${test_target}

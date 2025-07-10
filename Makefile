@@ -2,6 +2,11 @@
 # Makefile for icnscvt and libicnscvt.
 #
 
+ZLIB_CFLAGS	?= $(shell pkgconf zlib --cflags)
+ZLIB_LIBS	?= $(shell pkgconf zlib --libs)
+ZLIB_CFLAGS	::= ${ZLIB_CFLAGS}
+ZLIB_LIBS	::= ${ZLIB_LIBS}
+
 LIBPNG_CFLAGS	?= $(shell libpng-config --cflags)
 LIBPNG_LIBS	?= $(shell libpng-config --libs)
 LIBPNG_CFLAGS	::= ${LIBPNG_CFLAGS}

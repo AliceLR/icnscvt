@@ -38,20 +38,20 @@ src		= src
 src_obj		= ${src}/.build
 
 #static_objs	= ${src_obj}/libicnscvt.o \
-#		  ${src_obj}/icns_1bit.o \
-#		  ${src_obj}/icns_4bit.o \
-#		  ${src_obj}/icns_8bit.o \
-#		  ${src_obj}/icns_argb.o \
+#		  ${src_obj}/icns.o \
 #		  ${src_obj}/icns_format.o \
+#		  ${src_obj}/icns_format_1bit.o \
+#		  ${src_obj}/icns_format_4bit.o \
+#		  ${src_obj}/icns_format_8bit.o \
+#		  ${src_obj}/icns_format_argb.o \
+#		  ${src_obj}/icns_format_mask.o \
+#		  ${src_obj}/icns_format_png.o \
 
 static_objs	= \
 		  ${src_obj}/icns_image.o \
 		  ${src_obj}/icns_io.o \
 		  ${src_obj}/icns_jp2.o \
-
-#		  ${src_obj}/icns_mask.o \
-#		  ${src_obj}/icns_png.o \
-#		  ${src_obj}/icns.o \
+		  ${src_obj}/icns_png.o \
 
 shared_objs	= ${static_objs:.o=.lo}
 

@@ -108,6 +108,12 @@ static inline void clear_error(struct icns_data *icns)
 
 #define check_ok(icns, ret) \
   do { \
+    if((icns)->num_errors) \
+    { \
+      size_t _i; \
+      for(_i = 0; _i < (icns)->num_errors; _i++) \
+        OUT("\n    %s", (icns)->error_stack[_i]); \
+    } \
     ASSERTEQ(ret, ICNS_OK, "%d != %d", ret, ICNS_OK); \
     ASSERT((icns)->num_errors == 0, "error messages are set"); \
     ASSERT(!(icns)->is_error, "error state is set"); \

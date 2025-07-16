@@ -312,19 +312,20 @@ void test_load_tga(struct icns_data *icns, struct rgba_color **dest,
   else
     test_load(icns, &in, &in_size, filename);
 
-  ASSERT(in_size > 44, "minimum size check failed");
-  ASSERTMEM(in + in_size - 18, "TRUEVISION-XFILE.", 18, "magic check failed");
+  ASSERT(in_size > 44, "'%s': minimum size check failed: %zu", filename, in_size);
+  ASSERTMEM(in + in_size - 18, "TRUEVISION-XFILE.", 18,
+    "'%s': magic check failed", filename);
 
   w = get_u16le(in + 12);
   h = get_u16le(in + 14);
 
-  ASSERTEQ(in[1], 0, "indexed");
-  ASSERTEQ(in[2], 10, "not truecolor RLE");
-  ASSERT(w != 0, "bad width");
-  ASSERT(h != 0, "bad height");
-  ASSERTEQ(in[16], 32, "not 32bpp");
-  ASSERTEQ(in[17] & 0xf0, 0x20, "not top-to-bottom left-to-right");
-  ASSERTEQ(in[17] & 0x0f, 8, "not 8 alphabits");
+  ASSERTEQ(in[1], 0, "'%s': indexed: %d", filename, in[1]);
+  ASSERTEQ(in[2], 10, "'%s': not truecolor RLE: %d", filename, in[2]);
+  ASSERT(w != 0, "'%s': bad width: %d", filename, w);
+  ASSERT(h != 0, "'%s': bad height: %d", filename, h);
+  ASSERTEQ(in[16], 32, "'%s': not 32bpp: %d", filename, in[16]);
+  ASSERTEQ(in[17] & 0xf0, 0x20, "'%s': not top-left: %d", filename, in[17]);
+  ASSERTEQ(in[17] & 0x0f, 8, "'%s': not 8 alphabits: %d", filename, in[17]);
 
   total_px = (size_t)w * h;
   pixels = (struct rgba_color *)calloc(total_px, sizeof(struct rgba_color));
@@ -336,11 +337,11 @@ void test_load_tga(struct icns_data *icns, struct rgba_color **dest,
   while(pos < end && offset < total_px)
   {
     size_t num = (*pos & 0x7f) + 1;
-    ASSERT(num < total_px && offset <= total_px - num, "bad RLE");
+    ASSERT(num < total_px && offset <= total_px - num, "'%s': bad RLE", filename);
     if(*(pos++) & 0x80)
     {
       struct rgba_color color;
-      ASSERT(4 <= end - pos, "bad RLE");
+      ASSERT(4 <= end - pos, "'%s': bad RLE", filename);
       get_tga_color(&color, pos);
       pos += 4;
       for(i = 0; i < num; i++)
@@ -348,7 +349,7 @@ void test_load_tga(struct icns_data *icns, struct rgba_color **dest,
     }
     else
     {
-      ASSERT((ptrdiff_t)num * 4 <= end - pos, "bad unpacked block");
+      ASSERT((ptrdiff_t)num * 4 <= end - pos, "'%s': bad unpacked block", filename);
       for(i = 0; i < num; i++)
       {
         get_tga_color(pixels + offset, pos);

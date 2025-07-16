@@ -14,8 +14,8 @@ test_srcs	= \
 		${test_src}/test_image.c \
 		${test_src}/test_targa.c \
 		${test_src}/test_jp2.c \
+		${test_src}/test_png.c \
 
-# png
 # format
 # formats
 # icns/iconset/external

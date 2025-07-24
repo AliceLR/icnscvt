@@ -26,25 +26,11 @@
 
 #include <png.h>
 
-#define DIRENT_DIR    DATA_DIR "/dirent"
-#define INTERNAL_DIR  DATA_DIR "/internal"
-#define PNG_DIR       DATA_DIR "/png"
-
 struct test_png
 {
   const char *path;
   const char *compare;
   struct icns_png_stat st;
-};
-
-struct loaded_file
-{
-  const char *which;
-  uint8_t *data;
-  size_t data_size;
-  struct rgba_color *pixels;
-  unsigned w;
-  unsigned h;
 };
 
 static const struct test_png png_types[] =
@@ -191,64 +177,6 @@ static const char *not_pngs[] =
 #define num_not_pngs (sizeof(not_pngs) / sizeof(not_pngs[0]))
 
 
-static struct loaded_file loaded[num_png_types * 2 +
-                                 num_png_formats * 2 + num_not_pngs];
-static size_t num_loaded;
-#define max_loaded (sizeof(loaded) / sizeof(loaded[0]))
-
-NOT_NULL
-static struct loaded_file *get_loaded_file(const char *which)
-{
-  size_t i;
-  for(i = 0; i < num_loaded; i++)
-    if(loaded[i].which == which)
-      return &loaded[i];
-
-  ASSERT(num_loaded < max_loaded, "exceeded max loaded bound!");
-  loaded[num_loaded].which = which;
-  return &loaded[num_loaded++];
-}
-
-NOT_NULL
-static const struct loaded_file *get_file_direct(
- struct icns_data * RESTRICT icns, const char *which)
-{
-  struct loaded_file *ret = get_loaded_file(which);
-  if(ret->data)
-    return ret;
-
-  test_load(icns, &ret->data, &ret->data_size, which);
-  return ret;
-}
-
-NOT_NULL
-static const struct loaded_file *get_file_tga(
- struct icns_data * RESTRICT icns, const struct test_png *png, const char *which)
-{
-  struct loaded_file *ret = get_loaded_file(which);
-  if(ret->pixels)
-    return ret;
-
-  test_load_tga(icns, &ret->pixels, &ret->w, &ret->h, which);
-
-  ASSERTEQ(ret->w, png->st.width,
-    "'%s': %u != %u", which, ret->w, png->st.width);
-  ASSERTEQ(ret->h, png->st.height,
-    "'%s': %u != %u", which, ret->h, png->st.height);
-  return ret;
-}
-
-static void loaded_cleanup(void)
-{
-  size_t i;
-  for(i = 0; i < num_loaded; i++)
-  {
-    free(loaded[i].data);
-    free(loaded[i].pixels);
-  }
-}
-
-
 UNITTEST(png_icns_is_file_png)
 {
   bool ret;
@@ -261,7 +189,7 @@ UNITTEST(png_icns_is_file_png)
   for(i = 0; i < num_png_types; i++)
   {
     const struct test_png *png = png_types + i;
-    const struct loaded_file *loaded = get_file_direct(&icns, png->path);
+    const struct loaded_file *loaded = test_load_cached(&icns, png->path);
     ret = icns_is_file_png(loaded->data, loaded->data_size);
     ASSERTEQ(ret, true, "'%s' should be PNG", png->path);
   }
@@ -269,7 +197,7 @@ UNITTEST(png_icns_is_file_png)
   for(i = 0; i < num_png_formats; i++)
   {
     const struct test_png *png = png_formats + i;
-    const struct loaded_file *loaded = get_file_direct(&icns, png->path);
+    const struct loaded_file *loaded = test_load_cached(&icns, png->path);
     ret = icns_is_file_png(loaded->data, loaded->data_size);
     ASSERTEQ(ret, true, "'%s' should be PNG", png->path);
   }
@@ -277,7 +205,7 @@ UNITTEST(png_icns_is_file_png)
   for(i = 0; i < num_not_pngs; i++)
   {
     const char *not_png = not_pngs[i];
-    const struct loaded_file *loaded = get_file_direct(&icns, not_png);
+    const struct loaded_file *loaded = test_load_cached(&icns, not_png);
     ret = icns_is_file_png(loaded->data, loaded->data_size);
     ASSERTEQ(ret, false, "'%s' should NOT be PNG", not_png);
   }
@@ -290,7 +218,7 @@ UNITTEST(png_icns_is_file_png)
   ret = icns_is_file_png("", 0);
   ASSERTEQ(ret, false, "0 length should fail");
 
-  loaded_cleanup();
+  test_load_cached_cleanup();
 }
 
 
@@ -300,7 +228,7 @@ static void test_png_stat(struct icns_data * RESTRICT icns,
 {
   enum icns_error ret;
   struct icns_png_stat st;
-  const struct loaded_file *loaded = get_file_direct(icns, png->path);
+  const struct loaded_file *loaded = test_load_cached(icns, png->path);
 
   ret = icns_get_png_info(icns, &st, loaded->data, loaded->data_size);
   ASSERTEQ(ret, ICNS_OK, "'%s': failed icsn_get_png_info", png->path);
@@ -327,7 +255,7 @@ static void test_png_stat_not_a_png(struct icns_data * RESTRICT icns,
   enum icns_error ret;
   struct icns_png_stat st;
   struct icns_png_stat cmp;
-  const struct loaded_file *loaded = get_file_direct(icns, filename);
+  const struct loaded_file *loaded = test_load_cached(icns, filename);
 
   memset(&st, 0xff, sizeof(st));
   cmp = st;
@@ -355,7 +283,7 @@ UNITTEST(png_icns_get_png_info)
   for(i = 0; i < num_not_pngs; i++)
     test_png_stat_not_a_png(&icns, not_pngs[i]);
 
-  loaded_cleanup();
+  test_load_cached_cleanup();
 }
 
 
@@ -364,8 +292,9 @@ static void test_png_decode(struct icns_data * RESTRICT icns,
  const struct test_png *png, enum icns_error expected)
 {
   enum icns_error ret;
-  const struct loaded_file *loaded = get_file_direct(icns, png->path);
-  const struct loaded_file *compare = get_file_tga(icns, png, png->compare);
+  const struct loaded_file *loaded = test_load_cached(icns, png->path);
+  const struct loaded_file *compare = test_load_tga_cached(icns,
+    png->st.width, png->st.height, png->compare);
 
   const struct icns_format tmp_format =
   {
@@ -417,16 +346,17 @@ UNITTEST(png_icns_decode_png_to_pixel_array)
   for(i = 0; i < num_not_pngs; i++)
     test_png_stat_not_a_png(&icns, not_pngs[i]);
 
-  loaded_cleanup();
+  test_load_cached_cleanup();
 }
 
 
 NOT_NULL
 static void test_png_encode_and_decode(struct icns_data * RESTRICT icns,
- const struct test_png *png)
+ const struct test_png *png, bool to_stream)
 {
   enum icns_error ret;
-  const struct loaded_file *compare = get_file_tga(icns, png, png->compare);
+  const struct loaded_file *compare = test_load_tga_cached(icns,
+    png->st.width, png->st.height, png->compare);
 
   const struct icns_format tmp_format =
   {
@@ -444,23 +374,35 @@ static void test_png_encode_and_decode(struct icns_data * RESTRICT icns,
   struct icns_image *image;
 
   const size_t png_alloc = 1 << 16;
+  uint8_t *png_data;
   size_t png_size;
-  uint8_t *buffer = (uint8_t *)malloc(png_alloc);
-  ASSERT(buffer, "failed to alloc buffer");
 
   ret = icns_add_image_for_format(icns, &image, NULL, &tmp_format);
   check_ok(icns, ret);
 
-  ret = icns_io_init_write_memory(icns, buffer, png_alloc);
-  check_ok(icns, ret);
+  if(to_stream)
+  {
+    png_data = (uint8_t *)malloc(png_alloc);
+    ASSERT(png_data, "failed to alloc buffer");
 
-  ret = icns_encode_png_to_stream(icns, compare->pixels, compare->w, compare->h);
-  check_ok(icns, ret);
+    ret = icns_io_init_write_memory(icns, png_data, png_alloc);
+    check_ok(icns, ret);
 
-  png_size = icns->io.pos;
-  icns_io_end(icns);
+    ret = icns_encode_png_to_stream(icns, compare->pixels, compare->w, compare->h);
+    check_ok(icns, ret);
 
-  ret = icns_decode_png_to_pixel_array(icns, image, buffer, png_size);
+    png_size = icns->io.pos;
+    icns_io_end(icns);
+  }
+  else
+  {
+    ret = icns_encode_png_to_buffer(icns, &png_data, &png_size,
+      compare->pixels, compare->w, compare->h);
+    check_ok(icns, ret);
+  }
+
+  ret = icns_decode_png_to_pixel_array(icns, image, png_data, png_size);
+  free(png_data);
   check_ok(icns, ret);
 
   ASSERTMEM(image->pixels, compare->pixels,
@@ -468,7 +410,6 @@ static void test_png_encode_and_decode(struct icns_data * RESTRICT icns,
     "'%s': pixel data mismatch", png->path);
 
   icns_delete_all_images(icns);
-  free(buffer);
 }
 
 UNITTEST(png_icns_encode_png_to_stream)
@@ -484,10 +425,10 @@ UNITTEST(png_icns_encode_png_to_stream)
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)
-    test_png_encode_and_decode(&icns, png_types + i);
+    test_png_encode_and_decode(&icns, png_types + i, true);
 
   for(i = 0; i < num_png_formats; i++)
-    test_png_encode_and_decode(&icns, png_formats + i);
+    test_png_encode_and_decode(&icns, png_formats + i, true);
 
   /* Buffer too small -> should ICNS_PNG_WRITE_ERROR. */
   memset(pixels, 0, sizeof(pixels));
@@ -497,5 +438,22 @@ UNITTEST(png_icns_encode_png_to_stream)
   check_error(&icns, ret, ICNS_PNG_WRITE_ERROR);
   icns_io_end(&icns);
 
-  loaded_cleanup();
+  test_load_cached_cleanup();
+}
+
+UNITTEST(png_icns_encode_png_to_buffer)
+{
+  size_t i;
+
+  struct icns_data icns;
+  memset(&icns, 0, sizeof(icns));
+  check_init(&icns);
+
+  for(i = 0; i < num_png_types; i++)
+    test_png_encode_and_decode(&icns, png_types + i, false);
+
+  for(i = 0; i < num_png_formats; i++)
+    test_png_encode_and_decode(&icns, png_formats + i, false);
+
+  test_load_cached_cleanup();
 }

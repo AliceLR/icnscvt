@@ -18,6 +18,7 @@
  */
 
 #include "test.h"
+#include "targa.h"
 #include "../src/icns_io.h"
 
 /***** Open callbacks/memory/file for read/write. *****/
@@ -282,48 +283,11 @@ UNITTEST(io_init_write_file)
 
 /***** Generic IO *****/
 
-/* Randomly generated binary data. */
-static const uint8_t test_data[] =
-{
-  0x0A,0xFF,0xE9,0x06,0x94,0xEE,0xC2,0xCE,
-  0x87,0x72,0x5C,0xCE,0x5A,0xBD,0x72,0xE8,
-  0x3A,0xD3,0x47,0x5F,0x2B,0x3F,0x8E,0x31,
-  0x04,0x04,0x87,0xA7,0xBB,0xD6,0x6C,0x2A,
-  0xE3,0x8A,0x0B,0x58,0x73,0xCC,0xB4,0x57,
-  0xC9,0x10,0x55,0x69,0xEF,0xCB,0xE4,0xC1,
-  0x1C,0xE2,0xFD,0x96,0x7E,0x62,0xCD,0x75,
-  0x36,0x73,0x2E,0xDB,0xA5,0x87,0x13,0x03,
-  0xE6,0xD7,0x27,0xFD,0x9B,0x10,0xB1,0x0D,
-  0xED,0x49,0xBB,0x01,0xCE,0x39,0x73,0x84,
-  0x81,0xA7,0xD1,0xB3,0x5D,0x21,0x7A,0xAD,
-  0xCE,0xF1,0xE5,0x20,0x9C,0x4D,0xBC,0x1A,
-  0x70,0xCE,0x85,0x1C,0x94,0x24,0x81,0x71,
-  0xFA,0x07,0xD4,0xBD,0x80,0x70,0xE7,0xD9,
-  0x72,0x0A,0x0B,0xDE,0x50,0xE3,0x5F,0x80,
-  0xD2,0x68,0xF3,0x9E,0x2A,0x90,0x2D,0x16,
-  0x89,0x57,0x6C,0xDE,0xE4,0x6E,0xEC,0x51,
-  0xF8,0x31,0xEA,0xC6,0x8C,0xD9,0x08,0x67,
-  0xF6,0xF3,0xF2,0x41,0xE0,0x11,0x42,0x97,
-  0x4C,0xBF,0xA1,0x7C,0xD6,0xB8,0x2F,0xA1,
-  0x39,0x5A,0x26,0x6B,0x15,0x58,0xBA,0x48,
-  0xF0,0xAF,0x43,0x44,0x7A,0xDB,0x9D,0xD7,
-  0x15,0x4A,0xCF,0x01,0x94,0x11,0xEC,0x99,
-  0x43,0xDE,0x37,0xE3,0x28,0x2D,0x8A,0x60,
-  0x89,0xBF,0xF9,0xEA,0xAF,0x48,0xB2,0x07,
-  0xE9,0x69,0x27,0x5E,0xD3,0xDD,0x70,0xD0,
-  0xD7,0xF7,0xEA,0x49,0xF5,0x4C,0x25,0x2F,
-  0xC0,0xAD,0xFD,0xFA,0xA9,0x58,0x06,0xFD,
-  0x80,0x6E,0x2E,0x83,0x38,0xA8,0x9D,0x1E,
-  0xEB,0x46,0xE0,0x3C,0x1D,0x49,0x47,0xFB,
-  0x45,0xE2,0x8B,0x3F,0x8A,0x2A,0xB4,0x01,
-  0xCA,0x13,0x3A,0xEA,0xE0,0x9F,0x6B,0x00,
-};
-
 UNITTEST(io_icns_read_direct)
 {
   enum icns_error ret;
-  struct test_read_data data = { test_data, 0, sizeof(test_data) };
-  uint8_t buf[sizeof(test_data)];
+  struct test_read_data data = { test_random_data, 0, sizeof(test_random_data) };
+  uint8_t buf[sizeof(test_random_data)];
 
   struct icns_data icns;
   memset(&icns, 0, sizeof(icns));
@@ -343,17 +307,17 @@ UNITTEST(io_icns_read_direct)
   check_ok(&icns, ret);
   ASSERTEQ(icns.bytes_in, 0, "%zu", icns.bytes_in);
 
-  ret = icns_read_direct(&icns, buf, sizeof(test_data));
+  ret = icns_read_direct(&icns, buf, sizeof(test_random_data));
   check_ok(&icns, ret);
-  ASSERTMEM(buf, test_data, sizeof(test_data), "");
-  ASSERTEQ(icns.bytes_in, sizeof(test_data),
-   "%zu != %zu", icns.bytes_in, sizeof(test_data));
+  ASSERTMEM(buf, test_random_data, sizeof(test_random_data), "");
+  ASSERTEQ(icns.bytes_in, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_random_data));
 
   /* Can't read past end. */
   ret = icns_read_direct(&icns, buf, 1);
   check_error(&icns, ret, ICNS_READ_ERROR);
-  ASSERTEQ(icns.bytes_in, sizeof(test_data),
-   "%zu != %zu", icns.bytes_in, sizeof(test_data));
+  ASSERTEQ(icns.bytes_in, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_random_data));
 
   icns_io_end(&icns);
   check_init(&icns);
@@ -362,7 +326,7 @@ UNITTEST(io_icns_read_direct)
 UNITTEST(io_icns_load_direct)
 {
   enum icns_error ret;
-  struct test_read_data data = { test_data, 0, sizeof(test_data) };
+  struct test_read_data data = { test_random_data, 0, sizeof(test_random_data) };
   uint8_t *buf = NULL;
 
   struct icns_data icns;
@@ -387,12 +351,12 @@ UNITTEST(io_icns_load_direct)
   free(buf);
   ASSERTEQ(icns.bytes_in, 0, "%zu", icns.bytes_in);
 
-  ret = icns_load_direct(&icns, &buf, sizeof(test_data));
+  ret = icns_load_direct(&icns, &buf, sizeof(test_random_data));
   check_ok(&icns, ret);
   ASSERT(buf, "didn't set return buffer");
-  ASSERTMEM(buf, test_data, sizeof(test_data), "");
-  ASSERTEQ(icns.bytes_in, sizeof(test_data),
-   "%zu != %zu", icns.bytes_in, sizeof(test_data));
+  ASSERTMEM(buf, test_random_data, sizeof(test_random_data), "");
+  ASSERTEQ(icns.bytes_in, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_random_data));
   free(buf);
 
   /* Can't read past end. */
@@ -400,8 +364,8 @@ UNITTEST(io_icns_load_direct)
   ret = icns_load_direct(&icns, &buf, 1);
   check_error(&icns, ret, ICNS_READ_ERROR);
   ASSERT(!buf, "return buffer should still be null");
-  ASSERTEQ(icns.bytes_in, sizeof(test_data),
-   "%zu != %zu", icns.bytes_in, sizeof(test_data));
+  ASSERTEQ(icns.bytes_in, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_in, sizeof(test_random_data));
 
   icns_io_end(&icns);
   check_init(&icns);
@@ -410,7 +374,7 @@ UNITTEST(io_icns_load_direct)
 UNITTEST(io_icns_write_direct)
 {
   enum icns_error ret;
-  uint8_t buf[sizeof(test_data)];
+  uint8_t buf[sizeof(test_random_data)];
   struct test_write_data data = { buf, 0, sizeof(buf) };
 
   struct icns_data icns;
@@ -418,7 +382,7 @@ UNITTEST(io_icns_write_direct)
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
-  ret = icns_write_direct(&icns, test_data, 1);
+  ret = icns_write_direct(&icns, test_random_data, 1);
   check_error(&icns, ret, ICNS_INTERNAL_ERROR);
 
   ret = icns_io_init_write(&icns, &data, test_write_func);
@@ -427,21 +391,21 @@ UNITTEST(io_icns_write_direct)
 
   /* Write of zero should succeed and not advance cursor.
    * This might be different for user callbacks. */
-  ret = icns_write_direct(&icns, test_data, 0);
+  ret = icns_write_direct(&icns, test_random_data, 0);
   check_ok(&icns, ret);
   ASSERTEQ(icns.bytes_out, 0, "%zu", icns.bytes_out);
 
-  ret = icns_write_direct(&icns, test_data, sizeof(test_data));
+  ret = icns_write_direct(&icns, test_random_data, sizeof(test_random_data));
   check_ok(&icns, ret);
-  ASSERTMEM(buf, test_data, sizeof(test_data), "");
-  ASSERTEQ(icns.bytes_out, sizeof(test_data),
-   "%zu != %zu", icns.bytes_out, sizeof(test_data));
+  ASSERTMEM(buf, test_random_data, sizeof(test_random_data), "");
+  ASSERTEQ(icns.bytes_out, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_out, sizeof(test_random_data));
 
   /* Can't write past end. */
-  ret = icns_write_direct(&icns, test_data, 1);
+  ret = icns_write_direct(&icns, test_random_data, 1);
   check_error(&icns, ret, ICNS_WRITE_ERROR);
-  ASSERTEQ(icns.bytes_out, sizeof(test_data),
-   "%zu != %zu", icns.bytes_out, sizeof(test_data));
+  ASSERTEQ(icns.bytes_out, sizeof(test_random_data),
+   "%zu != %zu", icns.bytes_out, sizeof(test_random_data));
 
   icns_io_end(&icns);
   check_init(&icns);

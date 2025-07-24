@@ -149,8 +149,8 @@ enum icns_error icns_get_png_info(
   if(~color_type & PNG_COLOR_MASK_ALPHA)
   {
     /* Check for tRNS */
-    png_byte *trans;
-    int num_trans;
+    png_byte *trans = NULL;
+    int num_trans = 0;
     png_color_16 *trans_values;
 
     png_get_tRNS(png, info, &trans, &num_trans, &trans_values);
@@ -334,34 +334,15 @@ enum icns_error icns_decode_png_to_pixel_array(
  * PNG writer.
  */
 
-static void icns_png_write_fn(png_struct *png, png_bytep src, size_t size)
-{
-  struct icns_data *icns = (struct icns_data *)png_get_io_ptr(png);
-
-  if(icns->write_fn(src, size, icns) < size)
-    png_error(png, "write error");
-}
-
 static void icns_png_flush_fn(png_struct *png)
 {
   /* nop */
   (void)png;
 }
 
-/**
- * Encode a pixel array into a PNG and write it directly to the output stream.
- * On error, this may have written incomplete PNG data to the stream.
- *
- * @param icns      current state data.
- * @param pixels    pixel array to encode into a PNG.
- * @param width     width of pixel array, in real pixels.
- * @param height    height of pixel array, in real pixels.
- * @return          `ICNS_OK` on success;
- *                  `ICNS_PNG_INIT_ERROR` if libpng failed to init;
- *                  `ICNS_PNG_WRITE_ERROR` if libpng failed during write.
- */
-enum icns_error icns_encode_png_to_stream(struct icns_data * RESTRICT icns,
- const struct rgba_color *pixels, size_t width, size_t height)
+static enum icns_error icns_encode_png(struct icns_data *icns,
+ const struct rgba_color *pixels, size_t width, size_t height,
+ png_rw_ptr write_fn, void *write_fn_priv)
 {
   const struct rgba_color *pos;
   png_struct *png = NULL;
@@ -392,7 +373,7 @@ enum icns_error icns_encode_png_to_stream(struct icns_data * RESTRICT icns,
     goto error;
   }
 
-  png_set_write_fn(png, icns, icns_png_write_fn, icns_png_flush_fn);
+  png_set_write_fn(png, write_fn_priv, write_fn, icns_png_flush_fn);
 
   png_set_IHDR(png, info, width, height, 8,
    PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
@@ -413,4 +394,113 @@ enum icns_error icns_encode_png_to_stream(struct icns_data * RESTRICT icns,
 error:
   png_destroy_write_struct(&png, &info);
   return ret;
+}
+
+
+static void icns_png_write_stream_fn(png_struct *png, png_bytep src, size_t size)
+{
+  struct icns_data *icns = (struct icns_data *)png_get_io_ptr(png);
+
+  if(icns->write_fn(src, size, icns) < size)
+    png_error(png, "write error");
+}
+
+/**
+ * Encode a pixel array into a PNG and write it directly to the output stream.
+ * On error, this may have written incomplete PNG data to the stream.
+ *
+ * @param icns      current state data.
+ * @param pixels    pixel array to encode into a PNG.
+ * @param width     width of pixel array, in real pixels.
+ * @param height    height of pixel array, in real pixels.
+ * @return          `ICNS_OK` on success;
+ *                  `ICNS_PNG_INIT_ERROR` if libpng failed to init;
+ *                  `ICNS_PNG_WRITE_ERROR` if libpng failed during write.
+ */
+enum icns_error icns_encode_png_to_stream(struct icns_data * RESTRICT icns,
+ const struct rgba_color *pixels, size_t width, size_t height)
+{
+  return icns_encode_png(icns, pixels, width, height,
+   icns_png_write_stream_fn, icns);
+}
+
+
+struct icns_buffer_writer
+{
+  uint8_t *buffer;
+  size_t pos;
+  size_t alloc;
+};
+
+static size_t next_power_of_2(size_t value)
+{
+#if SIZE_MAX > UINT32_MAX
+  value |= value >> 32u;
+#endif
+  value |= value >> 16u;
+  value |= value >> 8u;
+  value |= value >> 4u;
+  value |= value >> 2u;
+  value |= value >> 1u;
+  return value + 1;
+}
+
+static void icns_png_write_buffer_fn(png_struct *png, png_bytep src, size_t size)
+{
+  struct icns_buffer_writer *b = (struct icns_buffer_writer *)png_get_io_ptr(png);
+
+  if(size > b->alloc - b->pos)
+  {
+    size_t next_alloc;
+    void *tmp;
+
+    next_alloc = next_power_of_2(b->pos + size);
+    if(next_alloc <= b->alloc)
+      png_error(png, "alloc size error in write");
+
+    tmp = realloc(b->buffer, next_alloc);
+    if(!tmp)
+      png_error(png, "alloc error in write");
+
+    b->buffer = tmp;
+    b->alloc = next_alloc;
+  }
+
+  memcpy(b->buffer + b->pos, src, size);
+  b->pos += size;
+}
+
+/**
+ * Encode a pixel array into a PNG and write it to a new memory allocation.
+ *
+ * @param icns      current state data.
+ * @param dest      pointer to write newly allocated memory pointer on success.
+ * @param dest_size pointer to write newly allocated memory size on success.
+ * @param pixels    pixel array to encode into a PNG.
+ * @param width     width of pixel array, in real pixels.
+ * @param height    height of pixel array, in real pixels.
+ * @return          `ICNS_OK` on success;
+ *                  `ICNS_PNG_INIT_ERROR` if libpng failed to init;
+ *                  `ICNS_PNG_WRITE_ERROR` if libpng failed during write.
+ */
+enum icns_error icns_encode_png_to_buffer(
+ struct icns_data * RESTRICT icns, uint8_t **dest, size_t *dest_size,
+ const struct rgba_color *pixels, size_t width, size_t height)
+{
+  struct icns_buffer_writer buffer = { NULL, 0, 0 };
+  enum icns_error ret;
+  void *tmp;
+
+  ret = icns_encode_png(icns, pixels, width, height,
+   icns_png_write_buffer_fn, &buffer);
+  if(ret)
+  {
+    E_("failed to write PNG to buffer");
+    free(buffer.buffer);
+    return ret;
+  }
+  tmp = realloc(buffer.buffer, buffer.pos);
+  *dest = tmp ? tmp : buffer.buffer;
+  *dest_size = buffer.pos;
+  return ICNS_OK;
 }

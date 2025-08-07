@@ -74,6 +74,8 @@ enum icns_error
   ICNS_PNG_NOT_1_BIT_COLOR,
   ICNS_PNG_NOT_1_BIT_COLOR_MASK,
   ICNS_PNG_NOT_IN_PALETTE,
+  ICNS_JP2_NOT_A_JP2,
+  ICNS_JP2_DATA_ERROR,
 };
 
 enum icns_state
@@ -124,6 +126,7 @@ struct icns_data
   enum icns_state state;
   enum icns_target_type input_target;
   enum icns_target_type output_target;
+  bool force_recoding;
 
   struct
   {
@@ -158,7 +161,7 @@ struct icns_data
   uint32_t requested_inputs[32];
   unsigned num_requested;
 
-  char error_stack[ICNS_ERROR_SIZE][64];
+  char error_stack[64][ICNS_ERROR_SIZE];
   unsigned num_errors;
   bool is_warning;
   bool is_error;

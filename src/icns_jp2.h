@@ -24,7 +24,18 @@
 
 ICNS_BEGIN_DECLS
 
+struct icns_jp2_stat
+{
+  unsigned width;           /* width, pixels */
+  unsigned height;          /* height, pixels */
+  unsigned depth;           /* sum bit depth of all components */
+};
+
 bool icns_is_file_jp2(const void *data, size_t data_size);
+
+enum icns_error icns_get_jp2_info(
+ struct icns_data * RESTRICT icns, struct icns_jp2_stat * RESTRICT dest,
+ const uint8_t *jp2_data, size_t jp2_size) NOT_NULL;
 
 ICNS_END_DECLS
 

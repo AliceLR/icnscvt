@@ -64,6 +64,9 @@ enum icns_error icns_decode_png_to_pixel_array(
 
 enum icns_error icns_encode_png_to_stream(struct icns_data * RESTRICT icns,
  const struct rgba_color *pixels, size_t width, size_t height) NOT_NULL;
+enum icns_error icns_encode_png_to_buffer(
+ struct icns_data * RESTRICT icns, uint8_t **dest, size_t *dest_size,
+ const struct rgba_color *pixels, size_t width, size_t height) NOT_NULL;
 
 ICNS_END_DECLS
 

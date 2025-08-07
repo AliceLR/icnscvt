@@ -36,6 +36,17 @@ UNITTEST(io_icns_put_u32be)
   ASSERTMEM(buf, expected, sizeof(expected), "");
 }
 
+UNITTEST(io_icns_get_u16be)
+{
+  static const uint8_t data_a[4] = { 0x12, 0x34, 0x56, 0x78 };
+  static const uint8_t data_b[4] = { 0xfe, 0xda, 0x09, 0xad };
+
+  ASSERTEQ(icns_get_u16be(data_a + 0), 0x1234, "");
+  ASSERTEQ(icns_get_u16be(data_a + 2), 0x5678, "");
+  ASSERTEQ(icns_get_u16be(data_b + 0), 0xfeda, "");
+  ASSERTEQ(icns_get_u16be(data_b + 2), 0x09ad, "");
+}
+
 UNITTEST(io_icns_get_u32be)
 {
   static const uint8_t data_a[4] = { 0x12, 0x34, 0x56, 0x78 };

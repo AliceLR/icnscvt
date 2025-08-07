@@ -26,6 +26,18 @@ ICNS_BEGIN_DECLS
 
 struct rgba_color;
 
+struct loaded_file
+{
+  char *which;
+  uint8_t *data;
+  size_t data_size;
+  struct rgba_color *pixels;
+  unsigned w;
+  unsigned h;
+};
+
+extern const uint8_t test_random_data[256];
+
 void test_load(struct icns_data *icns, uint8_t **dest, size_t *size,
  const char *filename) NOT_NULL;
 
@@ -45,6 +57,12 @@ void test_save_tga(struct icns_data *icns,
 
 void test_load_tga(struct icns_data *icns, struct rgba_color **dest,
  unsigned *dest_w, unsigned *dest_h, const char *filename) NOT_NULL;
+
+const struct loaded_file *test_load_cached(struct icns_data *icns,
+ const char *filename) NOT_NULL;
+const struct loaded_file *test_load_tga_cached(struct icns_data *icns,
+ size_t width, size_t height, const char *filename) NOT_NULL;
+void test_load_cached_cleanup(void);
 
 ICNS_END_DECLS
 

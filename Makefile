@@ -12,10 +12,10 @@ LIBPNG_LIBS	?= $(shell libpng-config --libs)
 LIBPNG_CFLAGS	::= ${LIBPNG_CFLAGS}
 LIBPNG_LIBS	::= ${LIBPNG_LIBS}
 
-LIBOJP2_CFLAGS	?= $(shell pkgconf libopenjp2 --cflags)
-LIBOJP2_LIBS	?= $(shell pkgconf libopenjp2 --libs)
-LIBOJP2_CFLAGS	::= ${LIBOJP2_CFLAGS}
-LIBOJP2_LIBS	::= ${LIBOJP2_LIBS}
+#LIBOJP2_CFLAGS	?= $(shell pkgconf libopenjp2 --cflags)
+#LIBOJP2_LIBS	?= $(shell pkgconf libopenjp2 --libs)
+#LIBOJP2_CFLAGS	::= ${LIBOJP2_CFLAGS}
+#LIBOJP2_LIBS	::= ${LIBOJP2_LIBS}
 
 CFLAGS		?= -O3 -g
 CFLAGS		+= -Wall -W -pedantic
@@ -39,15 +39,15 @@ src_obj		= ${src}/.build
 
 #static_objs	= ${src_obj}/libicnscvt.o \
 #		  ${src_obj}/icns.o \
-#		  ${src_obj}/icns_format.o \
 #		  ${src_obj}/icns_format_1bit.o \
 #		  ${src_obj}/icns_format_4bit.o \
 #		  ${src_obj}/icns_format_8bit.o \
 #		  ${src_obj}/icns_format_argb.o \
 #		  ${src_obj}/icns_format_mask.o \
-#		  ${src_obj}/icns_format_png.o \
 
 static_objs	= \
+		  ${src_obj}/icns_format.o \
+		  ${src_obj}/icns_format_png.o \
 		  ${src_obj}/icns_image.o \
 		  ${src_obj}/icns_io.o \
 		  ${src_obj}/icns_jp2.o \

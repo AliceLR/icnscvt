@@ -81,6 +81,20 @@ images += \
 	512x512.tga.gz \
 	1024x1024.tga.gz \
 
+images += \
+	16x16.jp2 \
+	16x16.j2k \
+	18x18.j2k \
+	24x24.j2k \
+	32x32.j2k \
+	36x36.j2k \
+	48x48.j2k \
+	64x64.j2k \
+	128x128.j2k \
+	256x256.j2k \
+	512x512.j2k \
+	1024x1024.j2k \
+
 MAGICK = magick -background none
 TGA_FLAGS = -strip -define tga:write-footer=true -type truecoloralpha -compress rle
 
@@ -88,6 +102,12 @@ all: ${images}
 
 %.tga.gz: %.png
 	${MAGICK} "$<" ${TGA_FLAGS} tga:- | gzip -c9 >"$@"
+
+%.jp2: %.png
+	${MAGICK} "$<" -quality 45 "$@"
+
+%.j2k: %.png
+	${MAGICK} "$<" -quality 45 "$@"
 
 #
 # PNG variant images.

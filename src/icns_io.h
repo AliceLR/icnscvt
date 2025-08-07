@@ -34,6 +34,12 @@ static inline void icns_put_u32be(uint8_t *buf, uint32_t v)
 }
 
 NOT_NULL
+static inline uint16_t icns_get_u16be(const uint8_t *buf)
+{
+  return (buf[0] << 8) | buf[1];
+}
+
+NOT_NULL
 static inline uint32_t icns_get_u32be(const uint8_t *buf)
 {
   return MAGIC(buf[0], buf[1], buf[2], buf[3]);

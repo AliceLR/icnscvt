@@ -205,6 +205,8 @@ UNITTEST(image_icns_clear_image)
 
   /* Should do nothing for an initialized image. */
   memset(&image_a, 0, sizeof(image_a));
+  memset(&image_b, 0, sizeof(image_b));
+  memset(&image_c, 0, sizeof(image_c));
   icns_clear_image(&image_a);
 
   /* Spoof image data so this can be tested independently. */
@@ -331,6 +333,10 @@ UNITTEST(image_icns_get_image_by_format)
   struct icns_data icns;
   memset(&icns, 0, sizeof(icns));
   check_init(&icns);
+
+  memset(&image_a, 0, sizeof(image_a));
+  memset(&image_b, 0, sizeof(image_b));
+  memset(&image_c, 0, sizeof(image_c));
 
   images = &(icns.images);
 

@@ -29,8 +29,12 @@
 
 ICNS_BEGIN_DECLS
 
-#define DATA_DIR    "test/data"
-#define TEMP_DIR    "test/tmp"
+#define DATA_DIR      "test/data"
+#define TEMP_DIR      "test/tmp"
+
+#define DIRENT_DIR    DATA_DIR "/dirent"
+#define INTERNAL_DIR  DATA_DIR "/internal"
+#define PNG_DIR       DATA_DIR "/png"
 
 #define STR2(x)     #x
 #define STR(x)      STR2(x)
@@ -47,8 +51,9 @@ typedef             void (*test_func)(void);
 
 #define FAIL(...) \
   do { \
-    OUT("\n at %s:%d (%s): %s", \
-      __FILE__, __LINE__, __func__, __VA_ARGS__); \
+    OUT("\n at %s:%d (%s):", \
+      __FILE__, __LINE__, __func__); \
+    OUT("\n  " __VA_ARGS__);\
     exit(1); \
   } while(0)
 

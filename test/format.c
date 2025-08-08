@@ -20,6 +20,7 @@
 #include "test.h"
 #include "targa.h"
 #include "format.h"
+#include "../src/icns_format_mask.h"
 #include "../src/icns_format_png.h"
 #include "../src/icns_image.h"
 #include "../src/icns_io.h"
@@ -34,6 +35,10 @@
 
 static const struct test_format test_formats[] =
 {
+  { &icns_format_s8mk, false, false,  PNG_DIR "/16x16_m",   RAW_DIR "/s8mk" },
+  { &icns_format_l8mk, false, false,  PNG_DIR "/32x32_m",   RAW_DIR "/l8mk" },
+  { &icns_format_h8mk, false, false,  PNG_DIR "/48x48_m",   RAW_DIR "/h8mk" },
+  { &icns_format_t8mk, false, false,  PNG_DIR "/128x128_m", RAW_DIR "/t8mk" },
   { &icns_format_icp6, true,  true,   PNG_DIR "/48x48",     NULL },
   { &icns_format_ic07, true,  true,   PNG_DIR "/128x128",   NULL },
   { &icns_format_ic08, true,  true,   PNG_DIR "/256x256",   NULL },

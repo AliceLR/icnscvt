@@ -203,6 +203,12 @@ static enum icns_error icns_decode_png(struct rgba_color **dest,
 
   *dest = NULL;
 
+  if(!icns_is_file_png(png_data, png_size))
+  {
+    E_("buffer to decode is not a PNG");
+    return ICNS_DATA_ERROR;
+  }
+
   png = png_create_read_struct(PNG_LIBPNG_VER_STRING,
    icns, icns_png_error_fn, icns_png_warn_fn);
   if(!png)
@@ -304,6 +310,7 @@ error:
  * @param png_data  pointer to PNG data in memory.
  * @param png_size  size of PNG data in memory.
  * @return          `ICNS_OK` on success;
+ *                  `ICNS_DATA_ERROR` if the buffer does not contain a PNG;
  *                  `ICNS_PNG_INIT_ERROR` if libpng failed to init;
  *                  `ICNS_PNG_READ_ERROR` if libpng failed to read;
  *                  `ICNS_INVALID_DIMENSIONS` if the PNG doesn't match

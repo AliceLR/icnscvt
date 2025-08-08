@@ -47,6 +47,10 @@ images = \
 	256x256.png \
 	512x512.png \
 	1024x1024.png \
+	16x16_m.png \
+	32x32_m.png \
+	48x48_m.png \
+	128x128_m.png \
 
 images += \
 	16x16_gs1.tga.gz \
@@ -80,6 +84,10 @@ images += \
 	256x256.tga.gz \
 	512x512.tga.gz \
 	1024x1024.tga.gz \
+	16x16_m.tga.gz \
+	32x32_m.tga.gz \
+	48x48_m.tga.gz \
+	128x128_m.tga.gz \
 
 images += \
 	16x16.jp2 \
@@ -94,6 +102,16 @@ images += \
 	256x256.j2k \
 	512x512.j2k \
 	1024x1024.j2k \
+	16x16_m.j2k \
+	32x32_m.j2k \
+	48x48_m.j2k \
+	128x128_m.j2k \
+
+images += \
+	../raw/s8mk \
+	../raw/l8mk \
+	../raw/h8mk \
+	../raw/t8mk \
 
 MAGICK = magick -background none
 TGA_FLAGS = -strip -define tga:write-footer=true -type truecoloralpha -compress rle
@@ -230,3 +248,33 @@ all: ${images}
 
 1024x1024.png: ${src}
 	${MAGICK} -density 768 "$<" -strip "$@"
+
+#
+# Mask images.
+# These greyscale images represent standalone 8-bit masks.
+#
+
+16x16_m.png: 16x16.png
+	${MAGICK} "$<" -channel a -separate "$@"
+
+32x32_m.png: 32x32.png
+	${MAGICK} "$<" -channel a -separate "$@"
+
+48x48_m.png: 48x48.png
+	${MAGICK} "$<" -channel a -separate "$@"
+
+128x128_m.png: 128x128.png
+	${MAGICK} "$<" -channel a -separate "$@"
+
+../raw/s8mk: 16x16.png
+	${MAGICK} "$<" -channel a -separate gray:"$@"
+
+../raw/l8mk: 32x32.png
+	${MAGICK} "$<" -channel a -separate gray:"$@"
+
+../raw/h8mk: 48x48.png
+	${MAGICK} "$<" -channel a -separate gray:"$@"
+
+../raw/t8mk: 128x128.png
+	${MAGICK} "$<" -channel a -separate gray:"$@"
+

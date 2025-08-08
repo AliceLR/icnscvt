@@ -79,7 +79,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   snprintf(tmp, sizeof(tmp), "%s.png", which->png_prefix);
   loaded = test_load_cached(icns, tmp);
 
-  /* PNG: keep if supported, otherwise pixels */
+  /* PNG: keep if supported, otherwise pixels (or a raw mask, if a mask) */
   icns->force_recoding = false;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
@@ -96,6 +96,8 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERTMEM(image->png, loaded->data, loaded->data_size, "%s", format->name);
   }
   else
+
+  if(!icns_format_is_mask(format))
   {
     ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
@@ -103,27 +105,44 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
     check_pixels(image, compare);
   }
+  else
+  {
+    ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
+    ASSERT(IMAGE_IS_RAW(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+  }
   icns_io_end(icns);
   icns_clear_image(image);
 
-  /* PNG, force recoding: always pixels */
+  /* PNG, force recoding: always pixels (unless a mask) */
   icns->force_recoding = true;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
   ret = format->read_from_external(icns, image, loaded->data_size);
   check_ok(icns, ret);
-  ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
-  ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
-  ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
-  ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
-  check_pixels(image, compare);
+  if(!icns_format_is_mask(format))
+  {
+    ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+    check_pixels(image, compare);
+  }
+  else
+  {
+    ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
+    ASSERT(IMAGE_IS_RAW(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
+    ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+  }
   icns_io_end(icns);
   icns_clear_image(image);
 
   snprintf(tmp, sizeof(tmp), "%s.j2k", which->png_prefix);
   loaded = test_load_cached(icns, tmp);
 
-  /* JP2: keep if supported, otherwise ICNS_UNIMPLEMENTED_FORMAT */
+  /* JP2: keep if supported, otherwise ICNS_DATA_ERROR */
   icns->force_recoding = false;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
@@ -140,17 +159,22 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERTMEM(image->jp2, loaded->data, loaded->data_size, "%s", format->name);
   }
   else
-    check_error(icns, ret, ICNS_UNIMPLEMENTED_FORMAT);
+    check_error(icns, ret, ICNS_DATA_ERROR);
 
   icns_io_end(icns);
   icns_clear_image(image);
 
-  /* JP2, force recoding: ICNS_UNIMPLEMENTED_FORMAT */
+  /* JP2, force recoding: ICNS_UNIMPLEMENTED_FORMAT if supported,
+   * otherwise ICNS_DATA_ERROR */
   icns->force_recoding = true;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
   ret = format->read_from_external(icns, image, loaded->data_size);
-  check_error(icns, ret, ICNS_UNIMPLEMENTED_FORMAT);
+  if(which->png_load)
+    check_error(icns, ret, ICNS_UNIMPLEMENTED_FORMAT);
+  else
+    check_error(icns, ret, ICNS_DATA_ERROR);
+
   icns_io_end(icns);
 
   /* Other formats should load from PNG if their dimensions match,

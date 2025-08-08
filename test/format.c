@@ -20,6 +20,7 @@
 #include "test.h"
 #include "targa.h"
 #include "format.h"
+#include "../src/icns_format_argb.h"
 #include "../src/icns_format_mask.h"
 #include "../src/icns_format_png.h"
 #include "../src/icns_image.h"
@@ -35,11 +36,19 @@
 
 static const struct test_format test_formats[] =
 {
+  { &icns_format_is32, false, false,  PNG_DIR "/16x16",     RAW_DIR "/is32" },
+  { &icns_format_il32, false, false,  PNG_DIR "/32x32",     RAW_DIR "/il32" },
+  { &icns_format_ih32, false, false,  PNG_DIR "/48x48",     RAW_DIR "/ih32" },
+  { &icns_format_it32, false, false,  PNG_DIR "/128x128",   RAW_DIR "/it32" },
   { &icns_format_s8mk, false, false,  PNG_DIR "/16x16_m",   RAW_DIR "/s8mk" },
   { &icns_format_l8mk, false, false,  PNG_DIR "/32x32_m",   RAW_DIR "/l8mk" },
   { &icns_format_h8mk, false, false,  PNG_DIR "/48x48_m",   RAW_DIR "/h8mk" },
   { &icns_format_t8mk, false, false,  PNG_DIR "/128x128_m", RAW_DIR "/t8mk" },
+  { &icns_format_icp4, true,  true,   PNG_DIR "/16x16",     RAW_DIR "/icp4" },
+  { &icns_format_icp5, true,  true,   PNG_DIR "/32x32",     RAW_DIR "/icp5" },
   { &icns_format_icp6, true,  true,   PNG_DIR "/48x48",     NULL },
+  { &icns_format_ic04, true,  false,  PNG_DIR "/16x16",     RAW_DIR "/ic04" },
+  { &icns_format_ic05, true,  false,  PNG_DIR "/32x32",     RAW_DIR "/ic05" },
   { &icns_format_ic07, true,  true,   PNG_DIR "/128x128",   NULL },
   { &icns_format_ic08, true,  true,   PNG_DIR "/256x256",   NULL },
   { &icns_format_ic09, true,  true,   PNG_DIR "/512x512",   NULL },
@@ -48,6 +57,7 @@ static const struct test_format test_formats[] =
   { &icns_format_ic12, true,  true,   PNG_DIR "/64x64",     NULL },
   { &icns_format_ic13, true,  true,   PNG_DIR "/256x256",   NULL },
   { &icns_format_ic14, true,  true,   PNG_DIR "/512x512",   NULL },
+  { &icns_format_icsb, true,  false,  PNG_DIR "/18x18",     RAW_DIR "/icsb" },
   { &icns_format_icsB, true,  true,   PNG_DIR "/36x36",     NULL },
   { &icns_format_sb24, true,  true,   PNG_DIR "/24x24",     NULL },
   { &icns_format_SB24, true,  true,   PNG_DIR "/48x48",     NULL },

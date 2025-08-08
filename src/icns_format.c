@@ -29,9 +29,7 @@
 /*
 #include "icns_format_8bit.h"
 */
-/*
 #include "icns_format_argb.h"
-*/
 #include "icns_format_mask.h"
 #include "icns_format_png.h"
 
@@ -63,12 +61,10 @@ static const struct icns_format * const icns_format_list[] =
   */
 
   /* RGB */
-  /* FIXME:
   &icns_format_is32,
   &icns_format_il32,
   &icns_format_ih32,
   &icns_format_it32,
-  */
 
   /* 8-bit mask */
   &icns_format_s8mk,
@@ -76,21 +72,12 @@ static const struct icns_format * const icns_format_list[] =
   &icns_format_h8mk,
   &icns_format_t8mk,
 
-  /* RGB/PNG/JP2 (import prefers PNG for alpha despite bugs) */
-  /* FIXME:
-  &icns_format_icp4,
-  &icns_format_icp5,
-  */
-
-  /* ARGB/PNG/JP2 (import converts PNG to ARGB) */
-  /* FIXME:
-  &icns_format_ic04,
-  &icns_format_ic05,
-  &icns_format_icsb,
-  */
-
   /* PNG/JP2 */
+  &icns_format_icp4, /* + RGB; import as PNG despite bugs to preserve alpha */
+  &icns_format_icp5, /* + RGB; import as PNG despite bugs to preserve alpha */
   &icns_format_icp6,
+  &icns_format_ic04, /* + ARGB; import as ARGB to avoid potential PNG issues */
+  &icns_format_ic05, /* + ARGB; import as ARGB to avoid potential PNG issues */
   &icns_format_ic07,
   &icns_format_ic08,
   &icns_format_ic09,
@@ -99,6 +86,7 @@ static const struct icns_format * const icns_format_list[] =
   &icns_format_ic12,
   &icns_format_ic13,
   &icns_format_ic14,
+  &icns_format_icsb, /* + ARGB; import as ARGB to avoid potential PNG issues */
   &icns_format_icsB,
   &icns_format_sb24,
   &icns_format_SB24

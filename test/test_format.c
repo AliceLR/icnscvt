@@ -28,9 +28,7 @@
 /*
 #include "../src/icns_format_8bit.h"
 */
-/*
 #include "../src/icns_format_argb.h"
-*/
 #include "../src/icns_format_mask.h"
 #include "../src/icns_format_png.h"
 
@@ -63,25 +61,19 @@ static const struct format_test format_test_list[] =
   { &icns_format_icl8, NULL,              false, false },
   { &icns_format_ich8, NULL,              false, false },
   */
-  /*
   { &icns_format_is32, &icns_format_s8mk, false, false },
   { &icns_format_il32, &icns_format_l8mk, false, false },
   { &icns_format_ih32, &icns_format_h8mk, false, false },
   { &icns_format_it32, &icns_format_t8mk, false, false },
-  */
   { &icns_format_s8mk, NULL,              true,  false },
   { &icns_format_l8mk, NULL,              true,  false },
   { &icns_format_h8mk, NULL,              true,  false },
   { &icns_format_t8mk, NULL,              true,  false },
-  /*
   { &icns_format_icp4, NULL,              false, true },
   { &icns_format_icp5, NULL,              false, true },
-  */
   { &icns_format_icp6, NULL,              false, true },
-  /*
   { &icns_format_ic04, NULL,              false, true },
   { &icns_format_ic05, NULL,              false, true },
-  */
   { &icns_format_ic07, NULL,              false, true },
   { &icns_format_ic08, NULL,              false, true },
   { &icns_format_ic09, NULL,              false, true },
@@ -90,9 +82,7 @@ static const struct format_test format_test_list[] =
   { &icns_format_ic12, NULL,              false, true },
   { &icns_format_ic13, NULL,              false, true },
   { &icns_format_ic14, NULL,              false, true },
-  /*
   { &icns_format_icsb, NULL,              false, true },
-  */
   { &icns_format_icsB, NULL,              false, true },
   { &icns_format_sb24, NULL,              false, true },
   { &icns_format_SB24, NULL,              false, true },

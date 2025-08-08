@@ -18,11 +18,11 @@ test_srcs	= \
 		${test_src}/test_format.c \
 		${test_src}/test_format_png.c \
 		${test_src}/test_format_mask.c \
+		${test_src}/test_format_argb.c \
 
 # format_1bpp
 # format_4bpp
 # format_8bpp
-# format_argb
 # icns/iconset/external
 # api
 # cli

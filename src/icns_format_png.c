@@ -29,7 +29,20 @@
  * `icns_image`. This is only decoded to a pixel array if required or if
  * requested by the caller, in which case, it needs to be re-encoded. */
 
-static enum icns_error icns_image_prepare_png_for_icns(
+/**
+ * Prepare an image to be written to ICNS as a PNG. This will (re)encode the
+ * output PNG if required or pass through the image's current PNG or JP2
+ * data (if present).
+ *
+ * @param icns      current state data.
+ * @param image     target image to prepare ICNS data for.
+ * @param sz        on success, the total output data size is written to the
+ *                  memory referenced by this pointer.
+ * @return          `ICNS_OK` on success;
+ *                  `ICNS_INTERNAL_ERROR` if no PNG, JP2, or pixel data is
+ *                  present; possibly other errors on PNG encode failure.
+ */
+enum icns_error icns_image_prepare_png_for_icns(
  struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image,
  size_t *sz)
 {

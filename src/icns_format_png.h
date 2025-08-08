@@ -70,12 +70,16 @@ enum icns_image_read_png_options
   ICNS_JP2_MASK             = 0x30
 };
 
+enum icns_error icns_image_prepare_png_for_icns(
+ struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image,
+ size_t *sz) NOT_NULL;
+
 enum icns_error icns_image_read_png(
  struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image,
- size_t sz, enum icns_image_read_png_options options);
+ size_t sz, enum icns_image_read_png_options options) NOT_NULL;
 
 enum icns_error icns_image_write_pixel_array_to_png(
- struct icns_data * RESTRICT icns, const struct icns_image *image);
+ struct icns_data * RESTRICT icns, const struct icns_image *image) NOT_NULL;
 
 ICNS_END_DECLS
 

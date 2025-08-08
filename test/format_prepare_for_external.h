@@ -135,9 +135,9 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     ASSERT(image->pixels, "%s: failed to allocate pixel array", format->name);
     memcpy(image->pixels, compare->pixels, sz * sizeof(struct rgba_color));
 
-    /* Pixels set, no mask image -> ICNS_INTERNAL_ERROR */
+    /* Pixels set, no mask image -> okay; just keep full opacity. */
     ret = format->prepare_for_external(icns, image);
-    check_error(icns, ret, ICNS_INTERNAL_ERROR);
+    check_ok(icns, ret);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);

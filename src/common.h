@@ -127,6 +127,7 @@ struct icns_data
   enum icns_target_type input_target;
   enum icns_target_type output_target;
   bool force_recoding;
+  bool force_raw_if_available;
 
   struct
   {

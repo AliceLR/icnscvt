@@ -133,10 +133,13 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     ASSERT(!image->data, "%s", format->name);
     clear_image_no_free(image);
   }
-  else
 
-  if(!icns_format_is_mask(which->format))
+  if((!which->png_save || format->type == ICNS_24_BIT_OR_PNG) &&
+   !icns_format_is_mask(which->format))
   {
+    /* ICP4/ICP5 support both types of output. */
+    icns->force_raw_if_available = true;
+
     ASSERT(which->raw_filename, "%s: no raw data file provided", format->name);
     loaded_raw = test_load_cached(icns, which->raw_filename);
 
@@ -230,8 +233,11 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
       image->data = NULL;
     }
     clear_image_no_free(image);
+    icns->force_raw_if_available = false;
   }
   else
+
+  if(!which->png_save)
   {
     /* Masks are prepared either by direct raw loads from ICNS/iconset
      * or when the corresponding RGB is prepared for ICNS/iconset.

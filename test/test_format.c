@@ -31,9 +31,7 @@
 /*
 #include "../src/icns_format_argb.h"
 */
-/*
 #include "../src/icns_format_mask.h"
-*/
 #include "../src/icns_format_png.h"
 
 struct format_test
@@ -71,12 +69,10 @@ static const struct format_test format_test_list[] =
   { &icns_format_ih32, &icns_format_h8mk, false, false },
   { &icns_format_it32, &icns_format_t8mk, false, false },
   */
-  /*
   { &icns_format_s8mk, NULL,              true,  false },
   { &icns_format_l8mk, NULL,              true,  false },
   { &icns_format_h8mk, NULL,              true,  false },
   { &icns_format_t8mk, NULL,              true,  false },
-  */
   /*
   { &icns_format_icp4, NULL,              false, true },
   { &icns_format_icp5, NULL,              false, true },

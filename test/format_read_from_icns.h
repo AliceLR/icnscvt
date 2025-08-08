@@ -42,13 +42,6 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
   ret = icns_add_image_for_format(icns, &image, NULL, format);
   check_ok(icns, ret);
 
-  /* Load junk -> ICNS_DATA_ERROR */
-  ret = icns_io_init_read_memory(icns, test_random_data, sizeof(test_random_data));
-  check_ok(icns, ret);
-  ret = format->read_from_icns(icns, image, sizeof(test_random_data));
-  check_error(icns, ret, ICNS_DATA_ERROR);
-  icns_io_end(icns);
-
   ASSERT(which->png_prefix, "%s: no file prefix provided", format->name);
   snprintf(tmp, sizeof(tmp), "%s.tga.gz", which->png_prefix);
   compare = test_load_tga_cached(icns,
@@ -63,15 +56,32 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
     check_ok(icns, ret);
     icns_io_end(icns);
 
-    ASSERT(IMAGE_IS_RAW(image), "'%s': should have retained raw image",
-      format->name);
-    ASSERT(IMAGE_IS_PIXELS(image), "'%s': should have decoded raw data",
-      format->name);
+    ASSERT(IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
-    check_pixels(image, compare);
+
+    if(icns_format_is_mask(format))
+    {
+      /* Do not decode masks to pixels by default */
+      ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
+    }
+    else
+    {
+      ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
+      check_pixels(image, compare);
+    }
 
     icns_clear_image(image);
+  }
+  else
+  {
+    /* Load junk -> ICNS_DATA_ERROR */
+    /* Raw formats may interpret this as actual data. */
+    ret = icns_io_init_read_memory(icns, test_random_data, sizeof(test_random_data));
+    check_ok(icns, ret);
+    ret = format->read_from_icns(icns, image, sizeof(test_random_data));
+    check_error(icns, ret, ICNS_DATA_ERROR);
+    icns_io_end(icns);
   }
 
   snprintf(tmp, sizeof(tmp), "%s.png", which->png_prefix);

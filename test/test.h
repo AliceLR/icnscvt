@@ -35,6 +35,7 @@ ICNS_BEGIN_DECLS
 #define DIRENT_DIR    DATA_DIR "/dirent"
 #define INTERNAL_DIR  DATA_DIR "/internal"
 #define PNG_DIR       DATA_DIR "/png"
+#define RAW_DIR       DATA_DIR "/raw"
 
 #define STR2(x)     #x
 #define STR(x)      STR2(x)

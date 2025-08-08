@@ -32,9 +32,7 @@
 /*
 #include "icns_format_argb.h"
 */
-/*
 #include "icns_format_mask.h"
-*/
 #include "icns_format_png.h"
 
 static const struct icns_format * const icns_format_list[] =
@@ -73,12 +71,10 @@ static const struct icns_format * const icns_format_list[] =
   */
 
   /* 8-bit mask */
-  /* FIXME:
   &icns_format_s8mk,
   &icns_format_l8mk,
   &icns_format_h8mk,
   &icns_format_t8mk,
-  */
 
   /* RGB/PNG/JP2 (import prefers PNG for alpha despite bugs) */
   /* FIXME:
@@ -249,7 +245,6 @@ const struct icns_format *icns_get_mask_for_format(
 {
   if(format->type == ICNS_24_BIT)
   {
-    /* FIXME:
     if(format->width == 16)
       return &icns_format_s8mk;
     if(format->width == 32)
@@ -258,7 +253,6 @@ const struct icns_format *icns_get_mask_for_format(
       return &icns_format_h8mk;
     if(format->width == 128)
       return &icns_format_t8mk;
-    */
   }
   return NULL;
 }

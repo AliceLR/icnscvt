@@ -305,6 +305,99 @@ UNITTEST(format_png_icns_image_read_png)
   icns_delete_all_images(&icns);
 }
 
+UNITTEST(format_png_icns_image_prepare_png_for_icns)
+{
+  struct icns_image *image;
+  const struct loaded_file *loaded_png;
+  const struct loaded_file *loaded_jp2;
+  const struct loaded_file *compare;
+  enum icns_error ret;
+  size_t sz;
+
+  struct icns_data icns;
+  memset(&icns, 0, sizeof(icns));
+  check_init(&icns);
+
+  ret = icns_add_image_for_format(&icns, &image, NULL, &icns_format_ic11);
+  check_ok(&icns, ret);
+
+  loaded_png = test_load_cached(&icns, PNG_DIR "/32x32.png");
+  loaded_jp2 = test_load_cached(&icns, PNG_DIR "/32x32.j2k");
+  compare = test_load_tga_cached(&icns,
+    icns_format_ic11.width * icns_format_ic11.factor,
+    icns_format_ic11.height * icns_format_ic11.factor,
+    PNG_DIR "/32x32.tga.gz");
+
+  /* PNG present -> return size of existing PNG */
+  image->png = loaded_png->data;
+  image->png_size = loaded_png->data_size;
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, loaded_png->data_size, "%zu != %zu", sz, loaded_png->data_size);
+  ASSERT(IMAGE_IS_PNG(image), "");
+  ASSERT(!IMAGE_IS_RAW(image), "");
+  ASSERT(!IMAGE_IS_JPEG_2000(image), "");
+  ASSERT(!IMAGE_IS_PIXELS(image), "");
+  clear_image_no_free(image);
+
+  /* JP2 present -> return size of existing JP2 */
+  image->jp2 = loaded_jp2->data;
+  image->jp2_size = loaded_jp2->data_size;
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, loaded_jp2->data_size, "%zu != %zu", sz, loaded_jp2->data_size);
+  ASSERT(IMAGE_IS_JPEG_2000(image), "");
+  ASSERT(!IMAGE_IS_RAW(image), "");
+  ASSERT(!IMAGE_IS_PNG(image), "");
+  ASSERT(!IMAGE_IS_PIXELS(image), "");
+  clear_image_no_free(image);
+
+  /* pixels present -> encode to new PNG that should decode to same pixels */
+  image->pixels = compare->pixels;
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_ok(&icns, ret);
+  ASSERT(IMAGE_IS_PIXELS(image), "");
+  ASSERT(IMAGE_IS_PNG(image), "");
+  ASSERTEQ(sz, image->png_size, "%zu != %zu", sz, image->png_size);
+  ASSERT(!IMAGE_IS_RAW(image), "");
+  ASSERT(!IMAGE_IS_JPEG_2000(image), "");
+  image->pixels = NULL;
+  ret = icns_decode_png_to_pixel_array(&icns, image, image->png, image->png_size);
+  check_ok(&icns, ret);
+  check_pixels(image, compare);
+  icns_clear_image(image);
+
+  /* pixels + JP2 -> return JP2 size */
+  image->pixels = compare->pixels;
+  image->jp2 = loaded_jp2->data;
+  image->jp2_size = loaded_jp2->data_size;
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, loaded_jp2->data_size, "%zu != %zu", sz, loaded_jp2->data_size);
+  ASSERT(IMAGE_IS_JPEG_2000(image), "");
+  ASSERT(IMAGE_IS_PIXELS(image), "");
+  ASSERT(!IMAGE_IS_RAW(image), "");
+  ASSERT(!IMAGE_IS_PNG(image), "");
+
+  /* ... + PNG -> return PNG size */
+  image->png = loaded_png->data;
+  image->png_size = loaded_png->data_size;
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, loaded_png->data_size, "%zu != %zu", sz, loaded_png->data_size);
+  ASSERT(IMAGE_IS_PNG(image), "");
+  ASSERT(IMAGE_IS_JPEG_2000(image), "");
+  ASSERT(IMAGE_IS_PIXELS(image), "");
+  ASSERT(!IMAGE_IS_RAW(image), "");
+  clear_image_no_free(image);
+
+  /* none present -> ICNS_INTERNAL_ERROR */
+  ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
+  check_error(&icns, ret, ICNS_INTERNAL_ERROR);
+
+  icns_delete_all_images(&icns);
+}
+
 UNITTEST(format_png_icns_image_write_pixel_array_to_png)
 {
   struct icns_image *image;

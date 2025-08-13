@@ -40,6 +40,7 @@ struct test_format
   const char *raw_filename;
 };
 
+NOT_NULL
 static inline void clear_image_no_free(struct icns_image *image)
 {
   image->pixels = NULL;
@@ -51,15 +52,31 @@ static inline void clear_image_no_free(struct icns_image *image)
   image->data_size = 0;
 }
 
-static inline void check_pixels(const struct icns_image *image,
-  const struct loaded_file *compare)
-{
-  size_t sz = image->real_width * image->real_height * sizeof(struct rgba_color);
-  ASSERT(image->pixels, "%s", image->format->name);
-  ASSERTMEM(image->pixels, compare->pixels, sz, "%s", image->format->name);
-}
+/* Macro to preserve invocation file/line. */
+#define check_pixels(image, compare) do { \
+  const struct rgba_color *i_pixel = (image)->pixels; \
+  const struct rgba_color *c_pixel = (compare)->pixels; \
+  size_t sz = (image)->real_width * (image)->real_height; \
+  size_t i; \
+  int ignore_alpha = (image)->format->type == ICNS_24_BIT || \
+    (image)->format->type == ICNS_24_BIT_OR_PNG; \
+  ASSERT((image)->pixels, "%s", (image)->format->name); \
+  ASSERT((compare)->pixels, "%s", (image)->format->name); \
+  for(i = 0; i < sz; i++) \
+  { \
+    ASSERTMEM(i_pixel, c_pixel, sizeof(struct rgba_color) - ignore_alpha, \
+      "%s: pixel %zu: %d %d %d %d != %d %d %d %d", \
+      (image)->format->name, i, \
+      i_pixel->r, i_pixel->g, i_pixel->b, i_pixel->a, \
+      c_pixel->r, c_pixel->g, c_pixel->b, c_pixel->a); \
+    \
+    i_pixel++; \
+    c_pixel++; \
+  } \
+} while(0)
 
-void test_format_functions(const struct icns_format *format);
+void test_format_functions(const struct icns_format *format) NOT_NULL;
+void test_format_maybe_generate_raw(const struct icns_format *format) NOT_NULL;
 
 ICNS_END_DECLS
 

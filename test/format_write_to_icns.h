@@ -57,9 +57,13 @@ static void test_format_write_to_icns(struct icns_data * RESTRICT icns,
   /* No prepared image data -> always fail */
   image->pixels = icns_allocate_pixel_array_for_image(image);
   ASSERT(image->pixels, "%s: failed to allocated pixel array", format->name);
+
+  ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+  check_ok(icns, ret);
   ret = format->write_to_icns(icns, image);
   check_error(icns, ret, ICNS_INTERNAL_ERROR);
   icns_clear_image(image);
+  icns_io_end(icns);
 
   ASSERT(which->png_prefix, "%s: no file prefix provided", format->name);
   snprintf(tmp, sizeof(tmp), "%s.tga.gz", which->png_prefix);
@@ -163,6 +167,22 @@ static void test_format_write_to_icns(struct icns_data * RESTRICT icns,
     ASSERTMEM(icns->io.ptr.dest, loaded->data, loaded->data_size, "%s", format->name);
   }
   icns_io_end(icns);
+
+  /* RAW and PNG set, format supports both outputs, force raw: direct copy RAW */
+  if(format->type == ICNS_24_BIT_OR_PNG)
+  {
+    icns->force_raw_if_available = true;
+
+    ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+    check_ok(icns, ret);
+    ret = format->write_to_icns(icns, image);
+    check_ok(icns, ret);
+    ASSERTEQ(icns->io.pos, loaded->data_size, "%s", format->name);
+    ASSERTMEM(icns->io.ptr.dest, loaded->data, loaded->data_size, "%s", format->name);
+    icns_io_end(icns);
+
+    icns->force_raw_if_available = false;
+  }
 
   /* RAW and PNG set with no IO initialized: ICNS_INTERNAL_ERROR */
   ret = format->write_to_icns(icns, image);

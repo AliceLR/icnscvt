@@ -90,12 +90,11 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
   check_ok(icns, ret);
   if(which->png_load)
   {
-    /* Direct pass-through -> do not decode, keep raw */
+    /* Direct pass-through -> may or may not decode; always keep raw */
     icns->force_recoding = false;
     ret = format->read_from_icns(icns, image, loaded->data_size);
     check_ok(icns, ret);
     ASSERT(IMAGE_IS_PNG(image), "%s", format->name);
-    ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERTEQ(image->png_size, loaded->data_size, "%s", format->name);

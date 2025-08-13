@@ -87,7 +87,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   check_ok(icns, ret);
   if(which->png_load)
   {
-    ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
+    /* This may or may not also generate pixels for a PNG depending on format. */
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
@@ -99,9 +99,9 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
 
   if(!icns_format_is_mask(format))
   {
+    /* This may keep external PNGs. */
     ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
-    ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
     check_pixels(image, compare);
   }

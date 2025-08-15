@@ -20,6 +20,7 @@
 #include "test.h"
 #include "targa.h"
 #include "format.h"
+#include "../src/icns.h"
 #include "../src/icns_io.h"
 #include "../src/icns_format_argb.h"
 #include "../src/icns_format_mask.h"
@@ -158,7 +159,7 @@ UNITTEST(format_mask_icns_add_alpha_from_8_bit_mask)
   struct icns_image *t8mk_rgb;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_add_image_for_format(&icns, &s8mk, NULL, &icns_format_s8mk);
@@ -232,7 +233,7 @@ UNITTEST(format_mask_icns_add_alpha_from_8_bit_mask)
   check_ok(&icns, ret);
   check_match(t8mk_rgb, t8mk);
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(format_mask_icns_split_alpha_to_8_bit_mask)
@@ -248,7 +249,7 @@ UNITTEST(format_mask_icns_split_alpha_to_8_bit_mask)
   struct icns_image *t8mk_rgb;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_add_image_for_format(&icns, &s8mk, NULL, &icns_format_s8mk);
@@ -313,7 +314,7 @@ UNITTEST(format_mask_icns_split_alpha_to_8_bit_mask)
   check_ok(&icns, ret);
   check_match(t8mk_rgb, t8mk);
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(format_icns_format_s8mk)

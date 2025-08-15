@@ -20,6 +20,7 @@
 #include "test.h"
 #include "targa.h"
 #include "format.h"
+#include "../src/icns.h"
 #include "../src/icns_io.h"
 #include "../src/icns_png.h"
 #include "../src/icns_format_png.h"
@@ -273,7 +274,7 @@ UNITTEST(format_png_icns_image_read_png)
   size_t f, i, j, k;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_add_image_for_format(&icns, &image11, NULL, &icns_format_ic11);
@@ -302,7 +303,7 @@ UNITTEST(format_png_icns_image_read_png)
       }
     }
   }
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(format_png_icns_image_prepare_png_for_icns)
@@ -315,7 +316,7 @@ UNITTEST(format_png_icns_image_prepare_png_for_icns)
   size_t sz;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_add_image_for_format(&icns, &image, NULL, &icns_format_ic11);
@@ -395,7 +396,7 @@ UNITTEST(format_png_icns_image_prepare_png_for_icns)
   ret = icns_image_prepare_png_for_icns(&icns, image, &sz);
   check_error(&icns, ret, ICNS_INTERNAL_ERROR);
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(format_png_icns_image_write_pixel_array_to_png)
@@ -408,7 +409,7 @@ UNITTEST(format_png_icns_image_write_pixel_array_to_png)
   uint8_t *output_buffer;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   output_buffer = (uint8_t *)malloc(65536);
@@ -471,7 +472,7 @@ UNITTEST(format_png_icns_image_write_pixel_array_to_png)
   ret = icns_image_write_pixel_array_to_png(&icns, image);
   check_error(&icns, ret, ICNS_INTERNAL_ERROR);
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
   free(output_buffer);
 }
 

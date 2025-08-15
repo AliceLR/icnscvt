@@ -19,6 +19,7 @@
 
 #include "test.h"
 #include "targa.h"
+#include "../src/icns.h"
 #include "../src/icns_format.h"
 #include "../src/icns_image.h"
 #include "../src/icns_io.h"
@@ -183,7 +184,7 @@ UNITTEST(png_icns_is_file_png)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)
@@ -271,7 +272,7 @@ UNITTEST(png_icns_get_png_info)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)
@@ -326,7 +327,7 @@ static void test_png_decode(struct icns_data * RESTRICT icns,
   else
     check_error(icns, ret, expected);
 
-  icns_delete_all_images(icns);
+  icns_clear_state_data(icns);
 }
 
 UNITTEST(png_icns_decode_png_to_pixel_array)
@@ -334,7 +335,7 @@ UNITTEST(png_icns_decode_png_to_pixel_array)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)
@@ -409,7 +410,7 @@ static void test_png_encode_and_decode(struct icns_data * RESTRICT icns,
     image->real_width * image->real_height * sizeof(struct rgba_color),
     "'%s': pixel data mismatch", png->path);
 
-  icns_delete_all_images(icns);
+  icns_clear_state_data(icns);
 }
 
 UNITTEST(png_icns_encode_png_to_stream)
@@ -421,7 +422,7 @@ UNITTEST(png_icns_encode_png_to_stream)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)
@@ -446,7 +447,7 @@ UNITTEST(png_icns_encode_png_to_buffer)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_png_types; i++)

@@ -19,6 +19,7 @@
 
 #include "test.h"
 #include "targa.h"
+#include "../src/icns.h"
 #include "../src/icns_io.h"
 
 /***** Open callbacks/memory/file for read/write. *****/
@@ -99,7 +100,7 @@ UNITTEST(io_init_read)
 {
   enum icns_error ret;
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_io_init_read(&icns, &icns, test_read_func);
@@ -123,7 +124,7 @@ UNITTEST(io_init_write)
 {
   enum icns_error ret;
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_io_init_write(&icns, &icns, test_write_func);
@@ -148,7 +149,7 @@ UNITTEST(io_init_read_memory)
   enum icns_error ret;
   uint8_t buffer[64];
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   memset(buffer, 0, sizeof(buffer));
@@ -183,7 +184,7 @@ UNITTEST(io_init_write_memory)
   enum icns_error ret;
   uint8_t buffer[64];
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_io_init_write_memory(&icns, buffer, sizeof(buffer));
@@ -216,7 +217,7 @@ UNITTEST(io_init_read_file)
 #ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Nonexistent file should leave things in init mode. */
@@ -251,7 +252,7 @@ UNITTEST(io_init_write_file)
 #ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Unopenable path should leave things in init mode. */
@@ -290,7 +291,7 @@ UNITTEST(io_icns_read_direct)
   uint8_t buf[sizeof(test_random_data)];
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
@@ -330,7 +331,7 @@ UNITTEST(io_icns_load_direct)
   uint8_t *buf = NULL;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
@@ -378,7 +379,7 @@ UNITTEST(io_icns_write_direct)
   struct test_write_data data = { buf, 0, sizeof(buf) };
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
@@ -431,7 +432,7 @@ UNITTEST(io_icns_read_chunk_header)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */
@@ -472,7 +473,7 @@ UNITTEST(io_icns_write_chunk_header)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Can't use on uninitialized stream. */

@@ -8,6 +8,7 @@ test_src	= test
 test_obj	= ${test_src}/.build
 
 test_srcs	= \
+		${test_src}/test_icns.c \
 		${test_src}/test_io.c \
 		${test_src}/test_io_file.c \
 		${test_src}/test_io_filesystem.c \

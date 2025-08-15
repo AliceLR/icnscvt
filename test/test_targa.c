@@ -19,6 +19,7 @@
 
 #include "test.h"
 #include "targa.h"
+#include "../src/icns.h"
 
 #include <zlib.h>
 
@@ -43,7 +44,7 @@ UNITTEST(test_load)
   uint32_t crc;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &data, &data_size, DATA_DIR "/internal/text.txt");
@@ -67,7 +68,7 @@ UNITTEST(test_load_compressed)
   size_t gzip_size;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &orig, &orig_size, DATA_DIR "/internal/text.txt");
@@ -93,7 +94,7 @@ UNITTEST(test_save)
   size_t save_size;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &orig, &orig_size, DATA_DIR "/internal/text.txt");
@@ -121,7 +122,7 @@ UNITTEST(test_save_compressed)
   size_t save_size;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &orig, &orig_size, DATA_DIR "/internal/text.txt");
@@ -155,7 +156,7 @@ UNITTEST(test_load_tga)
   uint32_t crc;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &tmp, &raw_size, DATA_DIR "/internal/test.raw");
@@ -191,7 +192,7 @@ UNITTEST(test_save_tga)
   uint32_t crc;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   test_load(&icns, &tmp, &raw_size, DATA_DIR "/internal/test.raw");

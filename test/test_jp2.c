@@ -19,6 +19,7 @@
 
 #include "test.h"
 #include "targa.h"
+#include "../src/icns.h"
 #include "../src/icns_jp2.h"
 
 struct test_jp2
@@ -82,7 +83,7 @@ UNITTEST(jp2_icns_is_file_jp2)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ASSERTEQ(icns_is_file_jp2(jp2_a, sizeof(jp2_a)), true, "");
@@ -119,7 +120,7 @@ UNITTEST(jp2_icns_get_jp2_info)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   for(i = 0; i < num_jp2_files; i++)

@@ -24,6 +24,7 @@
 #include "test.h"
 #include "targa.h"
 #include "format.h"
+#include "../src/icns.h"
 #include "../src/icns_format_argb.h"
 #include "../src/icns_format_mask.h"
 #include "../src/icns_format_png.h"
@@ -103,7 +104,7 @@ void test_format_functions(const struct icns_format *format)
   size_t i;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   which = get_test_format(format);
@@ -122,6 +123,8 @@ void test_format_functions(const struct icns_format *format)
   test_format_read_from_external(&icns, test_formats, num_formats, which, i);
   test_format_write_to_external(&icns, which);
   test_format_prepare_for_external(&icns, which);
+
+  icns_clear_state_data(&icns);
 
 #ifdef GENERATE_RAW_IMAGES
   if(generated)
@@ -142,7 +145,7 @@ void test_format_maybe_generate_raw(const struct icns_format *format)
   size_t out_size;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Force writing ICP4/ICP5/etc. as RGB instead of PNG. */
@@ -176,7 +179,7 @@ void test_format_maybe_generate_raw(const struct icns_format *format)
   check_ok(&icns, ret);
   icns_io_end(&icns);
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
   generated = true;
 
 #else

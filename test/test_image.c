@@ -18,6 +18,7 @@
  */
 
 #include "test.h"
+#include "../src/icns.h"
 #include "../src/icns_format.h"
 #include "../src/icns_image.h"
 
@@ -198,7 +199,7 @@ UNITTEST(image_icns_clear_image)
   struct icns_image image_a_original, image_b_original, image_c_original;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   images = &(icns.images);
@@ -331,7 +332,7 @@ UNITTEST(image_icns_get_image_by_format)
   struct icns_image *image;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   memset(&image_a, 0, sizeof(image_a));
@@ -427,7 +428,7 @@ UNITTEST(image_icns_add_image_for_format)
   struct icns_image *image4 = NULL;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Add for format--ok. */
@@ -500,7 +501,7 @@ UNITTEST(image_icns_add_image_for_format)
   ASSERTEQ(icns_get_image_by_format(&icns, &format_ABCE), image3, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_Baad), image4, "");
 
-  icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(image_icns_delete_image_by_format)
@@ -512,7 +513,7 @@ UNITTEST(image_icns_delete_image_by_format)
   struct icns_image *image4 = NULL;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Add images. */
@@ -597,6 +598,8 @@ UNITTEST(image_icns_delete_image_by_format)
   ASSERTEQ(icns_get_image_by_format(&icns, &format_d00d), NULL, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_ABCE), NULL, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_Baad), NULL, "");
+
+  icns_clear_state_data(&icns);
 }
 
 UNITTEST(image_icns_delete_all_images)
@@ -605,7 +608,7 @@ UNITTEST(image_icns_delete_all_images)
   enum icns_error ret;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Should be able to use immediately after init without issues. */
@@ -627,4 +630,5 @@ UNITTEST(image_icns_delete_all_images)
 
   /* Double delete. */
   icns_delete_all_images(&icns);
+  icns_clear_state_data(&icns);
 }

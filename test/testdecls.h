@@ -1,4 +1,8 @@
 #include "test.h"
+UNITDECL(icns_initialize_state_data)
+UNITDECL(icns_allocate_state_data)
+UNITDECL(icns_delete_state_data)
+UNITDECL(icns_clear_state_data)
 UNITDECL(io_icns_put_u32be)
 UNITDECL(io_icns_get_u16be)
 UNITDECL(io_icns_get_u32be)

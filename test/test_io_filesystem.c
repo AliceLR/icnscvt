@@ -18,6 +18,7 @@
  */
 
 #include "test.h"
+#include "../src/icns.h"
 #include "../src/icns_io.h"
 
 /***** Filesystem functions for .iconset *****/
@@ -60,7 +61,7 @@ UNITTEST(io_chdir)
   enum icns_error ret;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   /* Check test file from initial dir. */
@@ -93,7 +94,7 @@ UNITTEST(io_getcwd)
   enum icns_error ret;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ret = icns_getcwd(&icns, buf, sizeof(buf));
@@ -117,7 +118,7 @@ UNITTEST(io_mkdir)
   FILE *f;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ASSERTEQ(icns_get_file_type(TEMP_DIR "/mkdir_test"), IO_NOTEXIST, "");
@@ -151,7 +152,7 @@ UNITTEST(io_unlink)
   FILE *f;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ASSERTEQ(icns_get_file_type(TEMP_DIR "/unlink_file"), IO_NOTEXIST, "");
@@ -221,7 +222,7 @@ UNITTEST(io_read_directory)
   enum icns_error ret;
 
   struct icns_data icns;
-  memset(&icns, 0, sizeof(icns));
+  icns_initialize_state_data(&icns);
   check_init(&icns);
 
   ASSERTEQ(icns_get_file_type(DATA_DIR "/dirent"), IO_DIR, "");

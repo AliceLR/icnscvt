@@ -37,13 +37,15 @@ bin_target	= icnscvt
 src		= src
 src_obj		= ${src}/.build
 
-#static_objs	= ${src_obj}/libicnscvt.o \
-#		  ${src_obj}/icns.o \
+#		  ${src_obj}/libicnscvt.o \
 #		  ${src_obj}/icns_format_1bit.o \
 #		  ${src_obj}/icns_format_4bit.o \
 #		  ${src_obj}/icns_format_8bit.o \
+#		  ${src_obj}/icns_target_external.o \
+#		  ${src_obj}/icns_target_icns.o \
+#		  ${src_obj}/icns_target_iconset.o \
 
-static_objs	= \
+static_objs	= ${src_obj}/icns.o \
 		  ${src_obj}/icns_format.o \
 		  ${src_obj}/icns_format_argb.o \
 		  ${src_obj}/icns_format_mask.o \

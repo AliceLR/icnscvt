@@ -265,13 +265,14 @@ static enum icns_error icns_image_read_8_bit_mask_direct(
  * Usually, this should be imported/exported via its corresponding
  * IS32/IL32/IH32/IT32 instead.
  */
-static enum icns_error icns_image_read_8_bit_mask_from_png(
- struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image, size_t sz)
+static enum icns_error icns_image_read_8_bit_mask_from_external(
+ struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image)
 {
-  uint8_t *data;
   enum icns_error ret;
+  uint8_t *data;
+  size_t sz;
 
-  ret = icns_load_direct(icns, &data, sz);
+  ret = icns_load_direct_auto(icns, &data, &sz);
   if(ret)
   {
     E_("failed to load PNG for mask");
@@ -332,7 +333,7 @@ const struct icns_format icns_format_s8mk =
   icns_image_read_8_bit_mask_direct,
   icns_image_write_8_bit_mask_direct,
   icns_image_prepare_8_bit_mask_for_external,
-  icns_image_read_8_bit_mask_from_png,
+  icns_image_read_8_bit_mask_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -346,7 +347,7 @@ const struct icns_format icns_format_l8mk =
   icns_image_read_8_bit_mask_direct,
   icns_image_write_8_bit_mask_direct,
   icns_image_prepare_8_bit_mask_for_external,
-  icns_image_read_8_bit_mask_from_png,
+  icns_image_read_8_bit_mask_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -360,7 +361,7 @@ const struct icns_format icns_format_h8mk =
   icns_image_read_8_bit_mask_direct,
   icns_image_write_8_bit_mask_direct,
   icns_image_prepare_8_bit_mask_for_external,
-  icns_image_read_8_bit_mask_from_png,
+  icns_image_read_8_bit_mask_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -374,6 +375,6 @@ const struct icns_format icns_format_t8mk =
   icns_image_read_8_bit_mask_direct,
   icns_image_write_8_bit_mask_direct,
   icns_image_prepare_8_bit_mask_for_external,
-  icns_image_read_8_bit_mask_from_png,
+  icns_image_read_8_bit_mask_from_external,
   icns_image_write_pixel_array_to_png
 };

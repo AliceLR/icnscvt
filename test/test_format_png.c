@@ -246,6 +246,9 @@ static void check_read_png_all(struct icns_data *icns, struct icns_image *image,
   /* PNG 32x32 */
   sz = get_ic11_png(icns, NULL);
   check_read_png_individual(icns, image, opts, is_ic11, sz);
+  /* Should also work in full stream reading mode. */
+  sz = get_ic11_png(icns, NULL);
+  check_read_png_individual(icns, image, opts | ICNS_PNG_READ_FULL_STREAM, is_ic11, 0);
 
   /* PNG 64x64 */
   sz = get_ic12_png(icns, NULL);

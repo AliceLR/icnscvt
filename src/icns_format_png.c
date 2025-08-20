@@ -95,7 +95,8 @@ enum icns_error icns_image_prepare_png_for_icns(
  *
  * @param icns      current state data.
  * @param image     target image to load PNG/JP2/raw data to.
- * @param sz        expected size of PNG/JP2 data within stream (mandatory).
+ * @param sz        expected size of PNG/JP2 data within stream. Mandatory
+ *                  unless `ICNS_PNG_READ_FULL_STREAM` is set in options.
  * @param options   bitmask of options specified by `icns_image_read_png_options`
  * @return          `ICNS_OK` on success;
  *                  `ICNS_INVALID_DIMENSIONS` if the image has the wrong
@@ -117,7 +118,11 @@ enum icns_error icns_image_read_png(
    icns_format_supports_jpeg_2000(image->format);
   bool allow_raw = !!(options & ICNS_RAW_MASK);
 
-  ret = icns_load_direct(icns, &data, sz);
+  if(options & ICNS_PNG_READ_FULL_STREAM)
+    ret = icns_load_direct_auto(icns, &data, &sz);
+  else
+    ret = icns_load_direct(icns, &data, sz);
+
   if(ret)
   {
     E_("failed to load data:%s%s%s",
@@ -233,6 +238,17 @@ static enum icns_error icns_image_read_png_direct(
   return icns_image_read_png(icns, image, sz, options);
 }
 
+static enum icns_error icns_image_read_png_external(
+ struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image)
+{
+  enum icns_image_read_png_options options = ICNS_PNG_KEEP | ICNS_JP2_KEEP;
+
+  if(icns->force_recoding)
+    options = ICNS_PNG_DECODE | ICNS_JP2_DECODE;
+
+  return icns_image_read_png(icns, image, 0, options | ICNS_PNG_READ_FULL_STREAM);
+}
+
 static enum icns_error icns_image_write_png_direct(
  struct icns_data * RESTRICT icns, const struct icns_image *image)
 {
@@ -308,7 +324,7 @@ const struct icns_format icns_format_icp6 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -322,7 +338,7 @@ const struct icns_format icns_format_ic07 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -336,7 +352,7 @@ const struct icns_format icns_format_ic08 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -350,7 +366,7 @@ const struct icns_format icns_format_ic09 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -364,7 +380,7 @@ const struct icns_format icns_format_ic10 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -378,7 +394,7 @@ const struct icns_format icns_format_ic11 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -392,7 +408,7 @@ const struct icns_format icns_format_ic12 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -406,7 +422,7 @@ const struct icns_format icns_format_ic13 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -420,7 +436,7 @@ const struct icns_format icns_format_ic14 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -434,7 +450,7 @@ const struct icns_format icns_format_icsB =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -448,7 +464,7 @@ const struct icns_format icns_format_sb24 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -462,6 +478,6 @@ const struct icns_format icns_format_SB24 =
   icns_image_read_png_direct,
   icns_image_write_png_direct,
   NULL,
-  icns_image_read_png_direct,
+  icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
 };

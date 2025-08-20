@@ -104,15 +104,15 @@ struct icns_format
 
   /**
    * Function to read data from an external file using icns->read_priv.
+   * This will treat the entire read stream as a single file.
    * If `NULL`, this format does not support being imported.
    *
    * @param   icns    current state data.
    * @param   image   destination image to read data to.
-   * @param   size    size of external data to be read.
    * @return          `ICNS_OK` on success, otherwise a non-zero `icns_error` value.
    */
   enum icns_error (*read_from_external)(struct icns_data * RESTRICT,
-   struct icns_image * RESTRICT, size_t);
+   struct icns_image * RESTRICT);
 
   /**
    * Function to write data to an external file using icns->write_priv.

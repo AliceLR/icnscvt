@@ -338,7 +338,7 @@ UNITTEST(io_icns_load_direct)
   buf = NULL;
   ret = icns_load_direct(&icns, &buf, 1);
   check_error(&icns, ret, ICNS_INTERNAL_ERROR);
-  ASSERT(!buf, "reurn buffer should still be null");
+  ASSERT(!buf, "return buffer should still be null");
 
   ret = icns_io_init_read(&icns, &data, test_read_func);
   check_ok(&icns, ret);
@@ -367,6 +367,64 @@ UNITTEST(io_icns_load_direct)
   ASSERT(!buf, "return buffer should still be null");
   ASSERTEQ(icns.bytes_in, sizeof(test_random_data),
    "%zu != %zu", icns.bytes_in, sizeof(test_random_data));
+
+  icns_io_end(&icns);
+  check_init(&icns);
+}
+
+UNITTEST(io_icns_load_direct_auto)
+{
+  enum icns_error ret;
+  struct test_read_data data = { test_random_data, 0, sizeof(test_random_data) };
+  uint8_t *buf = NULL;
+  size_t sz = 0;
+
+  struct icns_data icns;
+  icns_initialize_state_data(&icns);
+  check_init(&icns);
+
+  /* Can't use on uninitialized stream. */
+  buf = NULL;
+  ret = icns_load_direct_auto(&icns, &buf, &sz);
+  check_error(&icns, ret, ICNS_INTERNAL_ERROR);
+  ASSERT(!buf, "return buffer should still be null");
+  ASSERTEQ(sz, 0, "return buffer size should still be 0");
+
+  ret = icns_io_init_read(&icns, &data, test_read_func);
+  check_ok(&icns, ret);
+  check_read(&icns, IO_CALLBACK, &data, test_read_func);
+
+  /* Stream of size zero should return an allocation and size 0. */
+  data.size = 0;
+  ret = icns_load_direct_auto(&icns, &buf, &sz);
+  check_ok(&icns, ret);
+  ASSERT(buf, "return buffer should not be null");
+  ASSERTEQ(sz, 0, "return buffer size should be 0");
+  free(buf);
+
+  /* Any other value should consume the entire stream. */
+  data.pos = 0;
+  data.size = sizeof(test_random_data);
+  ret = icns_load_direct_auto(&icns, &buf, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, sizeof(test_random_data), "");
+  ASSERTMEM(buf, test_random_data, sz, "");
+  free(buf);
+
+  data.pos = 127;
+  ret = icns_load_direct_auto(&icns, &buf, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, 129, "");
+  ASSERTMEM(buf, test_random_data + 127, 129, "");
+  free(buf);
+
+  data.pos = 27;
+  data.size = 171;
+  ret = icns_load_direct_auto(&icns, &buf, &sz);
+  check_ok(&icns, ret);
+  ASSERTEQ(sz, 144, "");
+  ASSERTMEM(buf, test_random_data + 27, 144, "");
+  free(buf);
 
   icns_io_end(&icns);
   check_init(&icns);

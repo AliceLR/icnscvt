@@ -373,6 +373,64 @@ enum icns_error icns_load_direct(struct icns_data *icns,
 }
 
 /**
+ * Read from the currently open stream to a newly allocated buffer.
+ * This function will read as many bytes from the stream as possible,
+ * adjusting the size of the allocation accordingly.
+ *
+ * @param icns        current state data.
+ * @param dest        the allocated buffer pointer containing the read data
+ *                    will be stored here on success.
+ * @param size        the final size of the allocated buffer will be stored
+ *                    here on success.
+ * @return            `ICNS_OK` on success, otherwise `ICNS_ALLOC_ERROR`,
+ *                    `ICNS_READ_ERROR`, or `ICNS_INTERNAL_ERROR`.
+ */
+enum icns_error icns_load_direct_auto(struct icns_data *icns,
+ uint8_t **dest, size_t *size)
+{
+  uint8_t *buf = NULL;
+  void *tmp;
+  size_t alloc = 0;
+  size_t sz = 0;
+
+  if(!icns->read_fn)
+  {
+    E_("reader is NULL");
+    return ICNS_INTERNAL_ERROR;
+  }
+
+  sz = 0;
+  alloc = 0;
+  while(sz == alloc)
+  {
+    alloc = alloc ? alloc << 1 : 8192;
+    if(alloc < sz)
+    {
+      free(buf);
+      E_("failed to allocate buffer");
+      return ICNS_ALLOC_ERROR;
+    }
+    tmp = realloc(buf, alloc);
+    if(!tmp)
+    {
+      free(buf);
+      E_("failed to allocate buffer");
+      return ICNS_ALLOC_ERROR;
+    }
+    buf = (uint8_t *)tmp;
+
+    sz += icns->read_fn(buf + sz, alloc - sz, icns->read_priv);
+  }
+  tmp = realloc(buf, sz ? sz : 1);
+  if(tmp)
+    buf = (uint8_t *)tmp;
+
+  *dest = buf;
+  *size = sz;
+  return ICNS_OK;
+}
+
+/**
  * Write to the currently open stream from a buffer.
  *
  * @param icns        current state data.

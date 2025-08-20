@@ -67,7 +67,9 @@ enum icns_image_read_png_options
   ICNS_JP2_KEEP             = 0x10,
   ICNS_JP2_DECODE           = 0x20,
   ICNS_JP2_DECODE_AND_KEEP  = (ICNS_JP2_KEEP | ICNS_JP2_DECODE),
-  ICNS_JP2_MASK             = 0x30
+  ICNS_JP2_MASK             = 0x30,
+  /* Use icns_load_direct_auto instead of icns_load_direct, ignore size. */
+  ICNS_PNG_READ_FULL_STREAM = 0x8000
 };
 
 enum icns_error icns_image_prepare_png_for_icns(

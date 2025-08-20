@@ -66,6 +66,8 @@ enum icns_error icns_read_direct(struct icns_data *icns,
  uint8_t *dest, size_t count) NOT_NULL;
 enum icns_error icns_load_direct(struct icns_data *icns,
  uint8_t **dest, size_t count) NOT_NULL;
+enum icns_error icns_load_direct_auto(struct icns_data *icns,
+ uint8_t **dest, size_t *size) NOT_NULL;
 enum icns_error icns_write_direct(struct icns_data *icns,
  const uint8_t *src, size_t count) NOT_NULL;
 

@@ -55,7 +55,12 @@ enum icns_error
   // Acceptable in some situations.
   ICNS_NO_IMAGE,
   ICNS_IMAGE_EXISTS_FOR_FORMAT,
+  ICNS_NOT_1_BIT_COLOR,
+  ICNS_NOT_1_BIT_COLOR_MASK,
+  ICNS_NOT_IN_PALETTE,
   // Always an error.
+  ICNS_NULL_POINTER,
+  ICNS_INVALID_PARAMETER,
   ICNS_INTERNAL_ERROR,
   ICNS_READ_OPEN_ERROR,
   ICNS_READ_ERROR,
@@ -66,16 +71,22 @@ enum icns_error
   ICNS_DATA_ERROR,
   ICNS_INVALID_DIMENSIONS,
   ICNS_UNKNOWN_CHUNK,
+  ICNS_UNKNOWN_FORMAT,
   ICNS_UNIMPLEMENTED_FORMAT,
   ICNS_PNG_INIT_ERROR,
   ICNS_PNG_READ_ERROR,
   ICNS_PNG_WRITE_ERROR,
   ICNS_PNG_NOT_A_PNG,
-  ICNS_PNG_NOT_1_BIT_COLOR,
-  ICNS_PNG_NOT_1_BIT_COLOR_MASK,
-  ICNS_PNG_NOT_IN_PALETTE,
   ICNS_JP2_NOT_A_JP2,
   ICNS_JP2_DATA_ERROR,
+};
+
+enum icns_error_level
+{
+  ICNS_NO_ERRORS,
+  ICNS_ERROR_SUMMARY,
+  ICNS_ERROR_DETAILS,
+  ICNS_WARNING_DETAILS
 };
 
 enum icns_state
@@ -126,6 +137,7 @@ struct icns_data
   enum icns_state state;
   enum icns_target_type input_target;
   enum icns_target_type output_target;
+  enum icns_error_level error_level;
   bool force_recoding;
   bool force_raw_if_available;
 
@@ -157,7 +169,7 @@ struct icns_data
   size_t bytes_out;
 
   void *err_priv;
-  void (*err_fn)(const char *);
+  void (*err_fn)(const char *, void *);
 
   uint32_t requested_inputs[32];
   unsigned num_requested;

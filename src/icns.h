@@ -29,6 +29,13 @@ void icns_initialize_state_data(struct icns_data *icns) NOT_NULL;
 void icns_clear_state_data(struct icns_data *icns) NOT_NULL;
 void icns_delete_state_data(struct icns_data *icns) NOT_NULL;
 
+void icns_set_error_level(struct icns_data *icns, enum icns_error_level level)
+  NOT_NULL;
+void icns_set_error_function(struct icns_data * RESTRICT icns,
+  void * RESTRICT priv, void (*err_func)(const char *message, void *priv))
+  NOT_NULL_1(1);
+int icns_flush_error(struct icns_data *icns, enum icns_error err) NOT_NULL;
+
 ICNS_END_DECLS
 
 #endif /* ICNSCVT_ICNS_H */

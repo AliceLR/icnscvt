@@ -539,8 +539,8 @@ static enum icns_error icns_image_read_pixel_array_from_png_or_argb(
 }
 
 /* Load from external PNG image (or JP2, if supported by this format). */
-static enum icns_error icns_image_read_pixel_array_from_png(
- struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image, size_t sz)
+static enum icns_error icns_image_read_pixel_array_from_external(
+ struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image)
 {
   const struct icns_format *format = image->format;
   const struct icns_format *mask_format;
@@ -551,7 +551,7 @@ static enum icns_error icns_image_read_pixel_array_from_png(
   if(icns->force_recoding)
     options = ICNS_PNG_DECODE | ICNS_JP2_DECODE;
 
-  ret = icns_image_read_png(icns, image, sz, options);
+  ret = icns_image_read_png(icns, image, 0, options | ICNS_PNG_READ_FULL_STREAM);
   if(ret)
   {
     E_("failed to load image");
@@ -632,7 +632,7 @@ const struct icns_format icns_format_is32 =
   icns_image_read_pixel_array_from_argb,
   icns_image_write_pixel_array_to_argb,
   icns_image_prepare_rgb_for_external,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -647,7 +647,7 @@ const struct icns_format icns_format_il32 =
   icns_image_read_pixel_array_from_argb,
   icns_image_write_pixel_array_to_argb,
   icns_image_prepare_rgb_for_external,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -662,7 +662,7 @@ const struct icns_format icns_format_ih32 =
   icns_image_read_pixel_array_from_argb,
   icns_image_write_pixel_array_to_argb,
   icns_image_prepare_rgb_for_external,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -677,7 +677,7 @@ const struct icns_format icns_format_it32 =
   icns_image_read_pixel_array_from_argb,
   icns_image_write_pixel_array_to_argb,
   icns_image_prepare_rgb_for_external,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -692,7 +692,7 @@ const struct icns_format icns_format_icp4 =
   icns_image_read_pixel_array_from_png_or_argb,
   icns_image_write_pixel_array_to_icp4_icp5,
   NULL,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -707,7 +707,7 @@ const struct icns_format icns_format_icp5 =
   icns_image_read_pixel_array_from_png_or_argb,
   icns_image_write_pixel_array_to_icp4_icp5,
   NULL,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -722,7 +722,7 @@ const struct icns_format icns_format_ic04 =
   icns_image_read_pixel_array_from_png_or_argb,
   icns_image_write_pixel_array_to_argb,
   NULL,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -737,7 +737,7 @@ const struct icns_format icns_format_ic05 =
   icns_image_read_pixel_array_from_png_or_argb,
   icns_image_write_pixel_array_to_argb,
   NULL,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };
 
@@ -752,6 +752,6 @@ const struct icns_format icns_format_icsb =
   icns_image_read_pixel_array_from_png_or_argb,
   icns_image_write_pixel_array_to_argb,
   NULL,
-  icns_image_read_pixel_array_from_png,
+  icns_image_read_pixel_array_from_external,
   icns_image_write_pixel_array_to_png
 };

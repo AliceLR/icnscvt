@@ -49,7 +49,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   /* Load junk -> ICNS_DATA_ERROR */
   ret = icns_io_init_read_memory(icns, test_random_data, sizeof(test_random_data));
   check_ok(icns, ret);
-  ret = format->read_from_external(icns, image, sizeof(test_random_data));
+  ret = format->read_from_external(icns, image);
   check_error(icns, ret, ICNS_DATA_ERROR);
   icns_io_end(icns);
 
@@ -66,7 +66,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     loaded = test_load_cached(icns, which->raw_filename);
     ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
     check_ok(icns, ret);
-    ret = format->read_from_external(icns, image, loaded->data_size);
+    ret = format->read_from_external(icns, image);
     check_error(icns, ret, ICNS_DATA_ERROR);
     icns_io_end(icns);
 
@@ -83,7 +83,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   icns->force_recoding = false;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
-  ret = format->read_from_external(icns, image, loaded->data_size);
+  ret = format->read_from_external(icns, image);
   check_ok(icns, ret);
   if(which->png_load)
   {
@@ -119,7 +119,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   icns->force_recoding = true;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
-  ret = format->read_from_external(icns, image, loaded->data_size);
+  ret = format->read_from_external(icns, image);
   check_ok(icns, ret);
   if(!icns_format_is_mask(format))
   {
@@ -146,7 +146,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   icns->force_recoding = false;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
-  ret = format->read_from_external(icns, image, loaded->data_size);
+  ret = format->read_from_external(icns, image);
   if(which->png_load)
   {
     check_ok(icns, ret);
@@ -169,7 +169,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
   icns->force_recoding = true;
   ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
   check_ok(icns, ret);
-  ret = format->read_from_external(icns, image, loaded->data_size);
+  ret = format->read_from_external(icns, image);
   if(which->png_load)
     check_error(icns, ret, ICNS_UNIMPLEMENTED_FORMAT);
   else
@@ -193,7 +193,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
       ret = icns_get_png_info(icns, &st, loaded->data, loaded->data_size);
       check_ok(icns, ret);
 
-      ret = format->read_from_external(icns, image, loaded->data_size);
+      ret = format->read_from_external(icns, image);
       icns_io_end(icns);
 
       if(st.width == image->real_width && st.height == image->real_height)

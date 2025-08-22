@@ -35,6 +35,7 @@
 
 #include "test.h"
 #include "testdecls.h"
+#include "testdeclsapi.h"
 
 struct test_entry
 {
@@ -46,7 +47,10 @@ static const struct test_entry tests[] =
 {
 #undef UNITDECL
 #define UNITDECL(x) { icnscvt_unit_ ## x, STR(x) },
+#ifdef ICNSCVT_STATIC
 #include "testdecls.h"
+#endif
+#include "testdeclsapi.h"
 };
 static size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
@@ -141,6 +145,6 @@ int main(int argc, char *argv[])
     }
     total++;
   }
-  OUT("\ntotal:  %d\npassed: %d\nfailed: %d\n", total, passed, failed);
+  OUT("\ntotal:  %d\npassed: %d\nfailed: %d\n\n", total, passed, failed);
   return ret;
 }

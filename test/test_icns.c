@@ -26,6 +26,8 @@ NOT_NULL
 static void test_init_compare(struct icns_data *compare)
 {
   memset(compare, 0, sizeof(struct icns_data));
+  compare->magic = ICNS_DATA_MAGIC;
+  compare->compat_version = ICNSCVT_COMPILED_VERSION;
 }
 
 UNITTEST(icns_initialize_state_data)

@@ -3,7 +3,8 @@
 # Do not invoke directly; use main Makefile instead.
 #
 
-test_target	= icnscvt-test
+test_static	= icnscvt-test-static
+test_shared	= icnscvt-test-shared
 test_src	= test
 test_obj	= ${test_src}/.build
 
@@ -25,18 +26,28 @@ test_srcs	= \
 # format_4bpp
 # format_8bpp
 # icns/iconset/external
-# api
+
+test_api_srcs	= \
+		${test_src}/test_api.c \
+
+# api (group similar calls into their own compilation units?)
 # cli
 
 test_objs	= \
 		${test_obj}/test.o \
 		${test_obj}/targa.o \
 		${test_obj}/format.o \
-		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_srcs}))
+		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_srcs})) \
+		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_api_srcs})) \
 
-test: ${test_target}
+test_shared_objs = \
+		${test_obj}/test.lo \
+		$(patsubst %.c,%.lo,$(patsubst ${test_src}/%,${test_obj}/%,${test_api_srcs})) \
+
+test: ${test_static} ${test_shared}
 	set -e; cd test/tmp; for f in *; do [ "$$f" = "README" ] || rm -r "$$f"; done
-	./${test_target}
+	./${test_static}
+	LD_LIBRARY_PATH="." ./${test_shared}
 
 check: test
 
@@ -46,9 +57,10 @@ ${test_obj}:
 	${MKDIR} "$@"
 
 ${test_obj}/%.o: ${test_src}/%.c
-	${CC} -MD ${CFLAGS} ${ZLIB_CFLAGS} -c $< -o $@
+	${CC} -MD ${CFLAGS} ${static_cflags} -c $< -o $@
 
-${test_obj}/test.o: ${test_src}/testdecls.h
+${test_obj}/%.lo: ${test_src}/%.c
+	${CC} -MD ${CFLAGS} ${shared_cflags} -c $< -o $@
 
 ${test_src}/testdecls.h: ${test_srcs}
 	echo '#include "test.h"' >$@; \
@@ -56,16 +68,27 @@ ${test_src}/testdecls.h: ${test_srcs}
 		grep UNITTEST "$$f" | sed 's/UNITTEST/UNITDECL/g' >>$@; \
 	done
 
+${test_src}/testdeclsapi.h: ${test_api_srcs}
+	echo '#include "test.h"' >$@; \
+	for f in ${test_api_srcs}; do \
+		grep UNITTEST "$$f" | sed 's/UNITTEST/UNITDECL/g' >>$@; \
+	done
+
 # Make ${test_obj} if it does not exist.
-${test_objs}: $(filter-out $(wildcard ${test_obj}), ${test_obj})
+${test_objs} ${test_shared_objs}: $(filter-out $(wildcard ${test_obj}), ${test_obj})
 
 -include ${test_objs:.o=.d}
+-include ${test_shared_objs:.lo=.d}
 
-icnscvt-test: ${test_objs} ${static_target}
-	${CC} ${LDFLAGS} $^ -o $@ ${LIBS} ${ZLIB_LIBS}
+${test_static}: ${test_objs} ${static_target}
+	${CC} ${LDFLAGS} $^ -o $@ ${LIBS} -lz
+
+${test_shared}: ${test_shared_objs} ${shared_target}
+	${CC} ${LDFLAGS} ${test_shared_objs} -o $@ -L${LIBDIR} -licnscvt ${LIBS} -lz
 
 test_clean:
-	${RM} -f ${test_target}
+	${RM} -f ${test_static}
+	${RM} -f ${test_shared}
 	${RM} -rf ${test_obj}
 
 clean: test_clean

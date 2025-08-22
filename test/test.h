@@ -23,6 +23,7 @@
 #ifndef ICNSCVT_TEST_H
 #define ICNSCVT_TEST_H
 
+#include "../include/libicnscvt.h"
 #include "../src/common.h"
 
 #include <stdio.h>
@@ -110,6 +111,8 @@ static inline void clear_error(struct icns_data *icns)
     ASSERTEQ((icns)->write_priv, NULL, ""); \
     ASSERTEQ((icns)->write_fn, NULL, ""); \
     ASSERTEQ((icns)->bytes_out, 0, ""); \
+    ASSERTEQ((icns)->magic, ICNS_DATA_MAGIC, ""); \
+    ASSERTEQ((icns)->compat_version, ICNSCVT_COMPILED_VERSION, ""); \
   } while(0)
 
 #define check_ok(icns, ret) \

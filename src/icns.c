@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../include/libicnscvt.h"
 #include "icns.h"
 #include "icns_image.h"
 
@@ -44,6 +45,8 @@ struct icns_data *icns_allocate_state_data(void)
 void icns_initialize_state_data(struct icns_data *icns)
 {
   memset(icns, 0, sizeof(struct icns_data));
+  icns->magic = ICNS_DATA_MAGIC;
+  icns->compat_version = ICNSCVT_COMPILED_VERSION;
 }
 
 static void icns_free_all(struct icns_data *icns)
@@ -71,6 +74,7 @@ void icns_clear_state_data(struct icns_data *icns)
  */
 void icns_delete_state_data(struct icns_data *icns)
 {
+  icns->magic = 0;
   icns_free_all(icns);
   free(icns);
 }

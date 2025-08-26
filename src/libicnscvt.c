@@ -17,12 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <assert.h>
 #include <limits.h>
 
 #include "../include/libicnscvt.h"
 
 #include "common.h"
 #include "icns.h"
+#include "icns_format.h"
 //#include "icns_target_external.h"
 //#include "icns_target_icns.h"
 //#include "icns_target_iconset.h"
@@ -32,6 +34,11 @@
 #define base_check() do { \
   if(!(context) || ((struct icns_data *)context)->magic != ICNS_DATA_MAGIC) \
     return -(int)ICNS_NULL_POINTER; \
+} while(0)
+
+#define base_check_zero() do { \
+  if(!(context) || ((struct icns_data *)context)->magic != ICNS_DATA_MAGIC) \
+    return 0; \
 } while(0)
 
 #define base_check_ptr() do { \
@@ -44,6 +51,15 @@
   { \
     E_("provided null pointer to function parameter '" str(ptr) "'"); \
     return icns_flush_error(icns, ICNS_NULL_POINTER); \
+  } \
+} while(0)
+
+#define null_check_zero(ptr) do { \
+  if(!(ptr)) \
+  { \
+    E_("provided null pointer to function parameter '" str(ptr) "'"); \
+    icns_flush_error(icns, ICNS_NULL_POINTER); \
+    return 0; \
   } \
 } while(0)
 
@@ -128,4 +144,63 @@ int icnscvt_set_error_function(icnscvt context, void *priv, icnscvt_error_func f
 
   icns_set_error_function(icns, priv, fn);
   return icns_flush_error(icns, ICNS_OK);
+}
+
+
+unsigned icnscvt_get_formats_list(icnscvt context, icns_format_id *dest,
+  unsigned dest_count)
+{
+  const struct icns_format *list[ICNSCVT_MAX_IMAGES];
+  size_t num;
+  size_t i;
+  base_check_zero();
+
+  num = icns_get_format_list(NULL, 0);
+  if(dest && dest_count)
+  {
+    /* Should never happen, as this would fail the regression tests. */
+    assert(num <= ICNSCVT_MAX_IMAGES);
+    icns_get_format_list(list, num);
+
+    if(dest_count > num)
+      dest_count = num;
+
+    for(i = 0; i < dest_count; i++)
+      dest[i] = list[i]->magic;
+  }
+  return num;
+}
+
+icns_format_id icnscvt_get_format_id_by_name(icnscvt context, const char *name)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  const struct icns_format *format;
+  base_check_zero();
+  null_check_zero(name);
+
+  format = icns_get_format_by_name(name);
+  if(!format)
+  {
+    E_("magic string does not represent an ICNS image format");
+    icns_flush_error(icns, ICNS_INVALID_PARAMETER);
+    return 0;
+  }
+  return format->magic;
+}
+
+unsigned icnscvt_get_format_string(icnscvt context,
+  char *dest, unsigned dest_count, icns_format_id which)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  const struct icns_format *format;
+  base_check_zero();
+
+  format = icns_get_format_by_magic(which);
+  if(!format)
+  {
+    E_("magic string does not represent an ICNS image format");
+    icns_flush_error(icns, ICNS_INVALID_PARAMETER);
+    return 0;
+  }
+  return icns_get_format_string(dest, dest_count, format);
 }

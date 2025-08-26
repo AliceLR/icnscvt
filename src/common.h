@@ -131,6 +131,8 @@ struct icns_image_set
 #define ICNS_ERROR_SIZE 256
 struct icns_data
 {
+#define ICNS_DATA_MAGIC MAGIC(0xfe,'i','V',0x2a)
+  uint32_t magic;
   struct icns_image_set images;
 
   int compat_version;

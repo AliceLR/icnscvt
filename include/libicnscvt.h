@@ -199,6 +199,69 @@ ICNSCVT_EXPORT int icnscvt_set_error_function(
   icnscvt_error_func fn
 );
 
+/**
+ * Get the full list of ICNS image formats supported by this libicnscvt.
+ *
+ * @param context           context/state data.
+ * @param dest              buffer to write the list of supported format IDs to.
+ *                          If this pointer is NULL, no IDs will be written.
+ * @param dest_count        number of `icns_format_id` entries in `dest`.
+ * @return                  the total number of image formats supported by
+ *                          this libicnscvt. If this number is greated than
+ *                          `dest_count`, this function will only write
+ *                          `dest_count` IDs to `dest` (if non-NULL).
+ *                          Returns 0 if `context` is NULL or invalid.
+ */
+ICNSCVT_EXPORT unsigned icnscvt_get_formats_list(
+  icnscvt context,
+  icns_format_id *dest,
+  unsigned dest_count
+);
+
+/**
+ * Gets the libicnscvt image format ID for a four letter ICNS image format
+ * name. These names are case-sensitive and identical to the IFF magic used
+ * in the ICNS file format for a given image format.
+ *
+ * @param context           context/state data.
+ * @param name              four letter ICNS image format name (nul-terminated).
+ * @return                  corresponding libicnscvt image format ID, or 0
+ *                          if the magic string does not exist, does not
+ *                          represent an image format, or if `context` or
+ *                          `name` is invalid.
+ */
+ICNSCVT_EXPORT icns_format_id icnscvt_get_format_id_by_name(
+  icnscvt context,
+  const char *name
+);
+
+/**
+ * Get a descriptive string for a given libicnscvt image format ID.
+ * This string includes the four letter image format name (IFF magic),
+ * logical dimensions, real dimensions, image type, and minimum macOS version.
+ *
+ * @param context           context/state data.
+ * @param dest              buffer to write the descriptive string to. If this
+ *                          pointer is NULL, no characters will be written.
+ * @param dest_count        Maximum number of characters that can be written
+ *                          to `dest`, including a nul-terminator.
+ * @param which             libicnscvt image format ID to get the string of.
+ * @return                  the number of characters in the full descriptive
+ *                          string, not including the nul-terminator. If this
+ *                          number is greater than or equal to `dest_count`,
+ *                          only (`dest_count` - 1) characters of the string
+ *                          plus a nul-terminator will be written to `dest`
+ *                          (if `dest` is non-NULL and `dest_count` > 0).
+ *                          Returns 0 if `which` or `context` is invalid.
+ */
+ICNSCVT_EXPORT unsigned icnscvt_get_format_string(
+  icnscvt context,
+  char *dest,
+  unsigned dest_count,
+  icns_format_id which
+);
+
+
 #ifdef __cplusplus
 }
 #endif

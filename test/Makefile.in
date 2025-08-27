@@ -29,6 +29,7 @@ test_srcs	= \
 
 test_api_srcs	= \
 		${test_src}/test_api.c \
+		${test_src}/test_api_format.c \
 
 # api (group similar calls into their own compilation units?)
 # cli
@@ -57,10 +58,10 @@ ${test_obj}:
 	${MKDIR} "$@"
 
 ${test_obj}/%.o: ${test_src}/%.c
-	${CC} -MD ${CFLAGS} ${static_cflags} -c $< -o $@
+	${CC} -MD -MF $@.d ${CFLAGS} ${static_cflags} -c $< -o $@
 
 ${test_obj}/%.lo: ${test_src}/%.c
-	${CC} -MD ${CFLAGS} ${shared_cflags} -c $< -o $@
+	${CC} -MD -MF $@.d ${CFLAGS} ${shared_cflags} -c $< -o $@
 
 ${test_src}/testdecls.h: ${test_srcs}
 	echo '#include "test.h"' >$@; \
@@ -77,8 +78,8 @@ ${test_src}/testdeclsapi.h: ${test_api_srcs}
 # Make ${test_obj} if it does not exist.
 ${test_objs} ${test_shared_objs}: $(filter-out $(wildcard ${test_obj}), ${test_obj})
 
--include ${test_objs:.o=.d}
--include ${test_shared_objs:.lo=.d}
+-include ${test_objs:.o=.o.d}
+-include ${test_shared_objs:.lo=.lo.d}
 
 ${test_static}: ${test_objs} ${static_target}
 	${CC} ${LDFLAGS} $^ -o $@ ${LIBS} -lz

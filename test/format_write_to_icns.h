@@ -43,6 +43,7 @@ static void test_format_write_to_icns(struct icns_data * RESTRICT icns,
 
   ret = icns_add_image_for_format(icns, &image, NULL, format);
   check_ok(icns, ret);
+  check_image_dirty(image); /* Clear flags */
 
   buffer = (uint8_t *)malloc(OUTPUT_BUFFER_SIZE);
   ASSERT(buffer, "failed to allocate output buffer");
@@ -64,6 +65,7 @@ static void test_format_write_to_icns(struct icns_data * RESTRICT icns,
   check_error(icns, ret, ICNS_INTERNAL_ERROR);
   icns_clear_image(image);
   icns_io_end(icns);
+  check_image_dirty(image); /* Clear flags */
 
   ASSERT(which->png_prefix, "%s: no file prefix provided", format->name);
   snprintf(tmp, sizeof(tmp), "%s.tga.gz", which->png_prefix);
@@ -183,6 +185,28 @@ static void test_format_write_to_icns(struct icns_data * RESTRICT icns,
 
     icns->force_raw_if_available = false;
   }
+
+  /* Unaffected by dirty_external. */
+  image->dirty_external = true;
+  image->png = loaded->data;
+  image->png_size = loaded->data_size;
+  ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+  check_ok(icns, ret);
+  ret = format->write_to_icns(icns, image);
+  check_ok(icns, ret);
+  icns_io_end(icns);
+  image->dirty_external = false;
+
+  /* Data is okay but dirty_icns is set -> ICNS_INTERNAL_ERROR */
+  image->dirty_icns = true;
+  image->png = loaded->data;
+  image->png_size = loaded->data_size;
+  ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+  check_ok(icns, ret);
+  ret = format->write_to_icns(icns, image);
+  check_error(icns, ret, ICNS_INTERNAL_ERROR);
+  icns_io_end(icns);
+  image->dirty_icns = false;
 
   /* RAW and PNG set with no IO initialized: ICNS_INTERNAL_ERROR */
   ret = format->write_to_icns(icns, image);

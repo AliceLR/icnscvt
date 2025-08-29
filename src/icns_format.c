@@ -245,6 +245,25 @@ const struct icns_format *icns_get_mask_for_format(
   return NULL;
 }
 
+/**
+ * Get an ICNS image format for a given mask.
+ */
+const struct icns_format *icns_get_format_from_mask(
+ const struct icns_format *mask)
+{
+  if(mask->type == ICNS_8_BIT_MASK)
+  {
+    if(mask->width == 16)
+      return &icns_format_is32;
+    if(mask->width == 32)
+      return &icns_format_il32;
+    if(mask->width == 48)
+      return &icns_format_ih32;
+    if(mask->width == 128)
+      return &icns_format_it32;
+  }
+  return NULL;
+}
 
 /**
  * Check if an ICNS image format is a mask format.

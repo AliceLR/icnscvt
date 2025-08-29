@@ -33,6 +33,8 @@ static struct icns_image *icns_alloc_image(const struct icns_format *format)
   image->format = format;
   image->real_width = format->width * format->factor;
   image->real_height = format->height * format->factor;
+  image->dirty_external = true;
+  image->dirty_icns = true;
   return image;
 }
 
@@ -59,6 +61,9 @@ void icns_clear_image(struct icns_image *image)
   image->data_size = 0;
   image->png_size = 0;
   image->jp2_size = 0;
+
+  image->dirty_external = true;
+  image->dirty_icns = true;
 }
 
 /**

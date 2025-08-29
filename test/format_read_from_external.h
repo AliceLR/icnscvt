@@ -113,6 +113,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
   }
   icns_io_end(icns);
+  check_image_dirty(image);
   icns_clear_image(image);
 
   /* PNG, force recoding: always pixels (unless a mask) */
@@ -137,7 +138,29 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
   }
   icns_io_end(icns);
+  check_image_dirty(image);
   icns_clear_image(image);
+
+  if(icns_format_is_mask(format))
+  {
+    struct icns_image *rgb = NULL;
+
+    /* Special: loading a mask should set the external dirty flag of its
+     * corresponding RGB image, but not the icns dirty flag. */
+    ret = icns_add_image_for_format(icns, &rgb, image, icns_get_format_from_mask(format));
+    check_ok(icns, ret);
+    check_image_dirty(rgb); /* Clear flags */
+
+    ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
+    check_ok(icns, ret);
+    ret = format->read_from_external(icns, image);
+    check_ok(icns, ret);
+    check_image_dirty(image);
+    icns_io_end(icns);
+
+    ASSERT(rgb->dirty_external, "%s", format->name);
+    ASSERT(!rgb->dirty_icns, "%s", format->name);
+  }
 
   snprintf(tmp, sizeof(tmp), "%s.j2k", which->png_prefix);
   loaded = test_load_cached(icns, tmp);
@@ -157,6 +180,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
     ASSERTEQ(image->jp2_size, loaded->data_size,
       "%s: %zu != %zu", format->name, image->jp2_size, loaded->data_size);
     ASSERTMEM(image->jp2, loaded->data, loaded->data_size, "%s", format->name);
+    check_image_dirty(image);
   }
   else
     check_error(icns, ret, ICNS_DATA_ERROR);
@@ -200,6 +224,7 @@ static void test_format_read_from_external(struct icns_data * RESTRICT icns,
       {
         /* Should load; don't bother to compare */
         check_ok(icns, ret);
+        check_image_dirty(image);
         icns_clear_image(image);
       }
       else

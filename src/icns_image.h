@@ -55,6 +55,9 @@ struct icns_image
   size_t data_size;
   size_t png_size;
   size_t jp2_size;
+
+  bool dirty_external;
+  bool dirty_icns;
 };
 
 /* Get the apparent brightness (luma) for an RGBX pixel. */

@@ -70,8 +70,30 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
       ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
       check_pixels(image, compare);
     }
+    check_image_dirty(image);
 
     icns_clear_image(image);
+
+    if(icns_format_is_mask(format))
+    {
+      struct icns_image *rgb = NULL;
+
+      /* Special: loading a mask should set the external dirty flag of its
+      * corresponding RGB image, but not the icns dirty flag. */
+      ret = icns_add_image_for_format(icns, &rgb, image, icns_get_format_from_mask(format));
+      check_ok(icns, ret);
+      check_image_dirty(rgb); /* Clear flags */
+
+      ret = icns_io_init_read_memory(icns, loaded->data, loaded->data_size);
+      check_ok(icns, ret);
+      ret = format->read_from_icns(icns, image, loaded->data_size);
+      check_ok(icns, ret);
+      check_image_dirty(image);
+      icns_io_end(icns);
+
+      ASSERT(rgb->dirty_external, "%s", format->name);
+      ASSERT(!rgb->dirty_icns, "%s", format->name);
+    }
   }
   else
   {
@@ -99,6 +121,7 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERTEQ(image->png_size, loaded->data_size, "%s", format->name);
     ASSERTMEM(image->png, loaded->data, loaded->data_size, "%s", format->name);
+    check_image_dirty(image);
     icns_clear_image(image);
 
     /* force_recoding -> decode to pixels and discard raw */
@@ -112,6 +135,7 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     check_pixels(image, compare);
+    check_image_dirty(image);
 
     icns_clear_image(image);
   }
@@ -145,6 +169,7 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERTEQ(image->jp2_size, loaded->data_size, "%s", format->name);
     ASSERTMEM(image->jp2, loaded->data, loaded->data_size, "%s", format->name);
+    check_image_dirty(image);
     icns_clear_image(image);
 
     /* force_recoding -> not supported */
@@ -194,6 +219,7 @@ static void test_format_read_from_icns(struct icns_data * RESTRICT icns,
         {
           /* Should load; don't bother to compare */
           check_ok(icns, ret);
+          check_image_dirty(image);
           icns_clear_image(image);
         }
         else

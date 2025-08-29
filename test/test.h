@@ -153,6 +153,14 @@ static inline void clear_error(struct icns_data *icns)
     clear_error(icns); \
   } while (0)
 
+/* Check both dirty flags after a load and clear them. */
+#define check_image_dirty(image) do { \
+  ASSERT((image)->dirty_external, "%s", (image)->format->name); \
+  ASSERT((image)->dirty_icns, "%s", (image)->format->name); \
+  (image)->dirty_external = false; \
+  (image)->dirty_icns = false; \
+} while(0)
+
 ICNS_END_DECLS
 
 #endif /* ICNSCVT_TEST_H */

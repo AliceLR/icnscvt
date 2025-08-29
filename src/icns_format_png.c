@@ -50,6 +50,7 @@ enum icns_error icns_image_prepare_png_for_icns(
 
   if(IMAGE_IS_PNG(image))
   {
+    image->dirty_icns = false;
     *sz = image->png_size;
     return ICNS_OK;
   }
@@ -57,6 +58,7 @@ enum icns_error icns_image_prepare_png_for_icns(
 
   if(IMAGE_IS_JPEG_2000(image))
   {
+    image->dirty_icns = false;
     *sz = image->jp2_size;
     return ICNS_OK;
   }
@@ -78,6 +80,7 @@ enum icns_error icns_image_prepare_png_for_icns(
 
     image->png = data;
     image->png_size = data_size;
+    image->dirty_icns = false;
     *sz = data_size;
     return ICNS_OK;
   }
@@ -284,6 +287,17 @@ static enum icns_error icns_image_write_png_direct(
   return ICNS_OK;
 }
 
+static enum icns_error icns_image_write_png_direct_icns(
+ struct icns_data * RESTRICT icns, const struct icns_image *image)
+{
+  if(image->dirty_icns)
+  {
+    E_("image was not prepared for import");
+    return ICNS_INTERNAL_ERROR;
+  }
+  return icns_image_write_png_direct(icns, image);
+}
+
 /**
  * Used by most formats to export external PNG files. This will keep PNG or
  * JP2 data, if present, and otherwise write a newly encoded PNG directly to
@@ -300,6 +314,12 @@ enum icns_error icns_image_write_pixel_array_to_png(
   const struct rgba_color *pixels = image->pixels;
   size_t width = image->real_width;
   size_t height = image->real_height;
+
+  if(image->dirty_external && image->format->prepare_for_external)
+  {
+    E_("image was not prepared for export");
+    return ICNS_INTERNAL_ERROR;
+  }
 
   /* Write PNG direct if original PNG data is present (RGB/ARGB). */
   if(IMAGE_IS_PNG(image) || IMAGE_IS_JPEG_2000(image))
@@ -322,7 +342,7 @@ const struct icns_format icns_format_icp6 =
   0x1070,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -336,7 +356,7 @@ const struct icns_format icns_format_ic07 =
   0x1070,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -350,7 +370,7 @@ const struct icns_format icns_format_ic08 =
   0x1050,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -364,7 +384,7 @@ const struct icns_format icns_format_ic09 =
   0x1050,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -378,7 +398,7 @@ const struct icns_format icns_format_ic10 =
   0x1070,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -392,7 +412,7 @@ const struct icns_format icns_format_ic11 =
   0x1080,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -406,7 +426,7 @@ const struct icns_format icns_format_ic12 =
   0x1080,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -420,7 +440,7 @@ const struct icns_format icns_format_ic13 =
   0x1080,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -434,7 +454,7 @@ const struct icns_format icns_format_ic14 =
   0x1080,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -448,7 +468,7 @@ const struct icns_format icns_format_icsB =
   0x1100,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -462,7 +482,7 @@ const struct icns_format icns_format_sb24 =
   0x1100,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png
@@ -476,7 +496,7 @@ const struct icns_format icns_format_SB24 =
   0x1100,
   icns_image_prepare_png_for_icns,
   icns_image_read_png_direct,
-  icns_image_write_png_direct,
+  icns_image_write_png_direct_icns,
   NULL,
   icns_image_read_png_external,
   icns_image_write_pixel_array_to_png

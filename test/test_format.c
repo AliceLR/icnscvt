@@ -36,6 +36,7 @@ struct format_test
 {
   const struct icns_format *format;
   const struct icns_format *mask;
+  const struct icns_format *format_from_mask;
   bool is_mask;
   bool is_jp2;
 };
@@ -43,49 +44,49 @@ struct format_test
 static const struct format_test format_test_list[] =
 {
   /*
-  { &icns_format_ICON, NULL,              false, false },
-  { &icns_format_icmp, NULL,              false, false },
-  { &icns_format_icsp, NULL,              false, false },
-  { &icns_format_ICNp, NULL,              false, false },
-  { &icns_format_ichp, NULL,              false, false },
+  { &icns_format_ICON, NULL,              NULL,               false, false },
+  { &icns_format_icmp, NULL,              NULL,               false, false },
+  { &icns_format_icsp, NULL,              NULL,               false, false },
+  { &icns_format_ICNp, NULL,              NULL,               false, false },
+  { &icns_format_ichp, NULL,              NULL,               false, false },
   */
   /*
-  { &icns_format_icm4, NULL,              false, false },
-  { &icns_format_ics4, NULL,              false, false },
-  { &icns_format_icl4, NULL,              false, false },
-  { &icns_format_ich4, NULL,              false, false },
+  { &icns_format_icm4, NULL,              NULL,               false, false },
+  { &icns_format_ics4, NULL,              NULL,               false, false },
+  { &icns_format_icl4, NULL,              NULL,               false, false },
+  { &icns_format_ich4, NULL,              NULL,               false, false },
   */
   /*
-  { &icns_format_icm8, NULL,              false, false },
-  { &icns_format_ics8, NULL,              false, false },
-  { &icns_format_icl8, NULL,              false, false },
-  { &icns_format_ich8, NULL,              false, false },
+  { &icns_format_icm8, NULL,              NULL,               false, false },
+  { &icns_format_ics8, NULL,              NULL,               false, false },
+  { &icns_format_icl8, NULL,              NULL,               false, false },
+  { &icns_format_ich8, NULL,              NULL,               false, false },
   */
-  { &icns_format_is32, &icns_format_s8mk, false, false },
-  { &icns_format_il32, &icns_format_l8mk, false, false },
-  { &icns_format_ih32, &icns_format_h8mk, false, false },
-  { &icns_format_it32, &icns_format_t8mk, false, false },
-  { &icns_format_s8mk, NULL,              true,  false },
-  { &icns_format_l8mk, NULL,              true,  false },
-  { &icns_format_h8mk, NULL,              true,  false },
-  { &icns_format_t8mk, NULL,              true,  false },
-  { &icns_format_icp4, NULL,              false, true },
-  { &icns_format_icp5, NULL,              false, true },
-  { &icns_format_icp6, NULL,              false, true },
-  { &icns_format_ic04, NULL,              false, true },
-  { &icns_format_ic05, NULL,              false, true },
-  { &icns_format_ic07, NULL,              false, true },
-  { &icns_format_ic08, NULL,              false, true },
-  { &icns_format_ic09, NULL,              false, true },
-  { &icns_format_ic10, NULL,              false, true },
-  { &icns_format_ic11, NULL,              false, true },
-  { &icns_format_ic12, NULL,              false, true },
-  { &icns_format_ic13, NULL,              false, true },
-  { &icns_format_ic14, NULL,              false, true },
-  { &icns_format_icsb, NULL,              false, true },
-  { &icns_format_icsB, NULL,              false, true },
-  { &icns_format_sb24, NULL,              false, true },
-  { &icns_format_SB24, NULL,              false, true },
+  { &icns_format_is32, &icns_format_s8mk, NULL,               false, false },
+  { &icns_format_il32, &icns_format_l8mk, NULL,               false, false },
+  { &icns_format_ih32, &icns_format_h8mk, NULL,               false, false },
+  { &icns_format_it32, &icns_format_t8mk, NULL,               false, false },
+  { &icns_format_s8mk, NULL,              &icns_format_is32,  true,  false },
+  { &icns_format_l8mk, NULL,              &icns_format_il32,  true,  false },
+  { &icns_format_h8mk, NULL,              &icns_format_ih32,  true,  false },
+  { &icns_format_t8mk, NULL,              &icns_format_it32,  true,  false },
+  { &icns_format_icp4, NULL,              NULL,               false, true },
+  { &icns_format_icp5, NULL,              NULL,               false, true },
+  { &icns_format_icp6, NULL,              NULL,               false, true },
+  { &icns_format_ic04, NULL,              NULL,               false, true },
+  { &icns_format_ic05, NULL,              NULL,               false, true },
+  { &icns_format_ic07, NULL,              NULL,               false, true },
+  { &icns_format_ic08, NULL,              NULL,               false, true },
+  { &icns_format_ic09, NULL,              NULL,               false, true },
+  { &icns_format_ic10, NULL,              NULL,               false, true },
+  { &icns_format_ic11, NULL,              NULL,               false, true },
+  { &icns_format_ic12, NULL,              NULL,               false, true },
+  { &icns_format_ic13, NULL,              NULL,               false, true },
+  { &icns_format_ic14, NULL,              NULL,               false, true },
+  { &icns_format_icsb, NULL,              NULL,               false, true },
+  { &icns_format_icsB, NULL,              NULL,               false, true },
+  { &icns_format_sb24, NULL,              NULL,               false, true },
+  { &icns_format_SB24, NULL,              NULL,               false, true },
 };
 static const size_t num_test_list =
  sizeof(format_test_list) / sizeof(format_test_list[0]);
@@ -325,6 +326,18 @@ UNITTEST(format_icns_get_mask_for_format)
     const struct icns_format *format = format_test_list[i].format;
     const struct icns_format *expected = format_test_list[i].mask;
     const struct icns_format *ret = icns_get_mask_for_format(format);
+    ASSERTEQ(ret, expected, "%s: %p != %p", format->name, (void *)ret, (void *)expected);
+  }
+}
+
+UNITTEST(format_icns_get_format_from_mask)
+{
+  size_t i;
+  for(i = 0; i < num_test_list; i++)
+  {
+    const struct icns_format *format = format_test_list[i].format;
+    const struct icns_format *expected = format_test_list[i].format_from_mask;
+    const struct icns_format *ret = icns_get_format_from_mask(format);
     ASSERTEQ(ret, expected, "%s: %p != %p", format->name, (void *)ret, (void *)expected);
   }
 }

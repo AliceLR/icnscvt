@@ -188,6 +188,7 @@ UNITTEST(image_is_macros)
 #define clear_check(img, orig) do { \
   icns_clear_image(&(img)); \
   ASSERTMEM(&(img), &(orig), sizeof(img), ""); \
+  check_image_dirty(&(img)); \
 } while(0)
 
 UNITTEST(image_icns_clear_image)
@@ -226,6 +227,12 @@ UNITTEST(image_icns_clear_image)
   image_b.real_height = 4;
   image_c.real_width = 5;
   image_c.real_height = 6;
+  image_a.dirty_external = true;
+  image_a.dirty_icns = true;
+  image_b.dirty_external = true;
+  image_b.dirty_icns = true;
+  image_c.dirty_external = true;
+  image_c.dirty_icns = true;
 
   image_a_original = image_a;
   image_b_original = image_b;
@@ -439,11 +446,15 @@ UNITTEST(image_icns_add_image_for_format)
   ASSERTEQ(image->prev, NULL, "");
   ASSERTEQ(image->next, NULL, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_abcd), image, "");
+  check_image_dirty(image);
 
   /* Can't add duplicate of any format--this just returns the existing one. */
   ret = icns_add_image_for_format(&icns, &image2, NULL, &format_abcd);
   check_ok_var(&icns, ret, ICNS_IMAGE_EXISTS_FOR_FORMAT);
   ASSERTEQ(image, image2, "");
+  /* These were cleared by the previous check; should not be restored. */
+  ASSERTEQ(image->dirty_external, false, "");
+  ASSERTEQ(image->dirty_icns, false, "");
 
   /* Add another format to the end. */
   ret = icns_add_image_for_format(&icns, &image2, NULL, &format_d00d);
@@ -456,6 +467,7 @@ UNITTEST(image_icns_add_image_for_format)
   ASSERTEQ(image2->next, NULL, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_abcd), image, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_d00d), image2, "");
+  check_image_dirty(image2);
 
   /* Add a format between the two. */
   ret = icns_add_image_for_format(&icns, &image3, image, &format_ABCE);
@@ -471,6 +483,7 @@ UNITTEST(image_icns_add_image_for_format)
   ASSERTEQ(icns_get_image_by_format(&icns, &format_abcd), image, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_d00d), image2, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_ABCE), image3, "");
+  check_image_dirty(image3);
 
   /* Still can't add duplicates of any of them... */
   ret = icns_add_image_for_format(&icns, &image4, image, &format_abcd);
@@ -500,6 +513,7 @@ UNITTEST(image_icns_add_image_for_format)
   ASSERTEQ(icns_get_image_by_format(&icns, &format_d00d), image2, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_ABCE), image3, "");
   ASSERTEQ(icns_get_image_by_format(&icns, &format_Baad), image4, "");
+  check_image_dirty(image4);
 
   icns_clear_state_data(&icns);
 }

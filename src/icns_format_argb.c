@@ -379,7 +379,10 @@ static enum icns_error icns_image_prepare_rgb_for_external(
   /* Mask may or may not exist in the source ICNS/.iconset. */
   mask = icns_get_image_by_format(icns, mask_format);
   if(!mask)
+  {
+    image->dirty_external = false;
     return ICNS_OK;
+  }
 
   ret = icns_add_alpha_from_8_bit_mask(icns, image, mask);
   if(ret)
@@ -387,6 +390,7 @@ static enum icns_error icns_image_prepare_rgb_for_external(
     E_("failed to copy 8-bit mask into 24-bit RGB image");
     return ret;
   }
+  image->dirty_external = false;
   return ICNS_OK;
 }
 
@@ -434,6 +438,7 @@ static enum icns_error icns_image_prepare_rgb_for_icns(
     E_("failed to pack %s image", is_alpha ? "ARGB" : "24-bit RGB");
     return ret;
   }
+  image->dirty_icns = false;
   *sz = image->data_size;
   return ICNS_OK;
 }
@@ -463,6 +468,7 @@ static enum icns_error icns_image_prepare_icp4_icp5_for_icns(
     E_("failed to pack %s image", is_alpha ? "ARGB" : "24-bit RGB");
     return ret;
   }
+  image->dirty_icns = false;
   *sz = image->data_size;
   return ICNS_OK;
 }
@@ -582,6 +588,12 @@ static enum icns_error icns_image_write_pixel_array_to_argb(
 {
   enum icns_error ret;
 
+  if(image->dirty_icns)
+  {
+    E_("image was not prepared for import");
+    return ICNS_INTERNAL_ERROR;
+  }
+
   if(!IMAGE_IS_RAW(image))
   {
     E_("missing internal raw (A)RGB data");
@@ -600,6 +612,12 @@ static enum icns_error icns_image_write_pixel_array_to_argb(
 static enum icns_error icns_image_write_pixel_array_to_icp4_icp5(
  struct icns_data * RESTRICT icns, const struct icns_image *image)
 {
+  if(image->dirty_icns)
+  {
+    E_("image was not prepared for import");
+    return ICNS_INTERNAL_ERROR;
+  }
+
   if(icns->force_raw_if_available && IMAGE_IS_RAW(image))
   {
     enum icns_error ret = icns_write_direct(icns, image->data, image->data_size);

@@ -56,6 +56,9 @@ struct icns_format
    * `write_to_icns` and returns the size of the data, which will be used
    * to generate the ICNS chunk size and TOC.
    *
+   * This function clears the dirty_icns flag on success. It may set dirty
+   * flags for other images.
+   *
    * @param   icns    current state data.
    * @param   image   source image to prepare for import to an ICNS.
    * @param   size    the total data size will be written to this pointer.
@@ -69,6 +72,9 @@ struct icns_format
    * Function to read data from an open stream using icns->read_priv. This
    * may be either from an ICNS file (after the chunk header) or a raw file.
    * If `NULL`, this format does not support being exported.
+   *
+   * This function sets both dirty flags on success, and may set other dirty
+   * flags for other images.
    *
    * @param   icns    current state data.
    * @param   image   destination image to read data to.
@@ -86,6 +92,8 @@ struct icns_format
    * `prepare_for_icns` function; otherwise, the caller will emit an error.
    * If `NULL`, this format does not support being imported.
    *
+   * This function will fail if the dirty_icns flag is set.
+   *
    * @param   icns    current state data.
    * @param   image   source image to write data from.
    * @return          `ICNS_OK` on success, otherwise a non-zero `icns_error` value.
@@ -98,6 +106,13 @@ struct icns_format
    * Most of the time this function isn't necessary, but for 24-bit
    * is32/il32/ih32/it32 icons, this generates an alpha channel from the
    * s8mk/l8mk/h8mk/t8mk masks.
+   *
+   * This function should clear the dirty_external flag. It may set dirty
+   * flags for other images.
+   *
+   * @param   icns    current state data.
+   * @param   image   source image to prepare for export to external.
+   * @return          `ICNS_OK` on success, otherwise a non-zero `icns_error` value.
    */
   enum icns_error (*prepare_for_external)(struct icns_data * RESTRICT,
    struct icns_image * RESTRICT);
@@ -106,6 +121,9 @@ struct icns_format
    * Function to read data from an external file using icns->read_priv.
    * This will treat the entire read stream as a single file.
    * If `NULL`, this format does not support being imported.
+   *
+   * This function should set both dirty flags on success, and may set dirty
+   * flags for other images.
    *
    * @param   icns    current state data.
    * @param   image   destination image to read data to.
@@ -117,6 +135,9 @@ struct icns_format
   /**
    * Function to write data to an external file using icns->write_priv.
    * If `NULL`, this format does not support being exported.
+   *
+   * This function will fail if BOTH the dirty_external flag is set and this
+   * format has a prepare_for_external function.
    *
    * @param   icns    current state data.
    * @param   image   source image to write data from.
@@ -140,6 +161,8 @@ const struct icns_format *icns_get_format_by_magic(uint32_t magic);
 const struct icns_format *icns_get_format_by_name(const char *name) NOT_NULL;
 const struct icns_format *icns_get_mask_for_format(
  const struct icns_format *format) NOT_NULL;
+const struct icns_format *icns_get_format_from_mask(
+ const struct icns_format *mask) NOT_NULL;
 
 bool icns_format_is_mask(const struct icns_format *format) NOT_NULL;
 bool icns_format_supports_png(const struct icns_format *format) NOT_NULL;

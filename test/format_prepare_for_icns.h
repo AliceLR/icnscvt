@@ -68,18 +68,24 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     /* raw pointer should be ignored and remain unset */
     image->data = compare->data;
     image->data_size = compare->data_size;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
+    ASSERT(image->dirty_icns, "%s", format->name);
     clear_image_no_free(image);
 
     /* pixels set only -> convert to PNG, return PNG size */
     image->pixels = compare->pixels;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->png_size, "%s: %zu != %zu", format->name, sz, image->png_size);
     ASSERT(image->png, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
     /* converted PNG should decode to exact match of pixels */
     image->pixels = NULL;
     ret = icns_decode_png_to_pixel_array(icns, image, image->png, image->png_size);
@@ -90,47 +96,67 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     /* PNG only -> return PNG size */
     image->png = loaded->data;
     image->png_size = loaded->data_size;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->png_size, "%s: %zu != %zu", format->name, sz, image->png_size);
     ASSERT(!image->pixels, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
 
     /* pixels and PNG -> return PNG size */
     image->pixels = compare->pixels;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz2);
     check_ok(icns, ret);
     ASSERTEQ(sz2, sz, "%s: %zu != %zu", format->name, sz2, sz);
     ASSERT(!image->jp2, "%s", format->name);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
     clear_image_no_free(image);
 
     /* JP2 only -> return JP2 size */
     image->jp2 = compare->data;
     image->jp2_size = compare->data_size;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->jp2_size, "%s: %zu != %zu", format->name, sz, image->jp2_size);
     ASSERT(!image->pixels, "%s", format->name);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
 
     /* pixels and JP2 -> return JP2 size */
     image->pixels = compare->pixels;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->jp2_size, "%s: %zu != %zu", format->name, sz, image->jp2_size);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
 
     /* PNG and JP2 -> return PNG size */
     image->png = loaded->data;
     image->png_size = loaded->data_size;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->png_size, "%s: %zu != %zu", format->name, sz, image->png_size);
     ASSERT(!image->data, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
     clear_image_no_free(image);
   }
 
@@ -144,35 +170,45 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     loaded_raw = test_load_cached(icns, which->raw_filename);
 
     /* nothing set -> ICNS_INTERNAL_ERROR */
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
+    ASSERT(image->dirty_icns, "%s", format->name);
 
     /* raw set only -> ICNS_INTERNAL_ERROR (these formats must always recode) */
     image->data = compare->data;
     image->data_size = compare->data_size;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
     ASSERT(!image->pixels, "%s", format->name);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
+    ASSERT(image->dirty_icns, "%s", format->name);
     clear_image_no_free(image);
 
     /* everything but pixels set -> same */
     image->data = (uint8_t *)0x12345;
     image->png = image->data;
     image->jp2 = image->data;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
     ASSERT(!image->pixels, "%s", format->name);
+    ASSERT(image->dirty_icns, "%s", format->name);
     clear_image_no_free(image);
 
     /* pixels set only -> convert to raw, return raw size */
     image->pixels = compare->pixels;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERT(image->data, "%s", format->name);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
     /* raw should exactly match raw input file */
     ASSERTEQ(sz, image->data_size,
       "%s: %zu != %zu", format->name, sz, image->data_size);
@@ -184,11 +220,15 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     free(image->data);
     image->data = (uint8_t *)malloc(1234);
     ASSERT(image->data, "failed to allocate throwaway buffer");
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERT(image->data, "%s", format->name);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
     /* raw should exactly match raw input file */
     ASSERTEQ(sz, image->data_size,
       "%s: %zu != %zu", format->name, sz, image->data_size);
@@ -208,15 +248,23 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
 
       ret = icns_add_image_for_format(icns, &mask, image, format_mask);
       check_ok(icns, ret);
+      check_image_dirty(mask); /* Clear flags */
 
       /* When the corresponding mask exists, preparing this image should replace
        * the raw data for the corresponding mask image with an array of the
        * input alpha values from this image. */
+      image->dirty_external = true;
+      image->dirty_icns = true;
       ret = format->prepare_for_icns(icns, image, &sz);
       check_ok(icns, ret);
       ASSERT(image->data, "%s", format->name);
       ASSERT(!image->png, "%s", format->name);
       ASSERT(!image->jp2, "%s", format->name);
+      ASSERT(!image->dirty_icns, "%s", format->name);
+      ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
+      /* This should set both dirty flags in the mask. */
+      ASSERT(mask->dirty_external, "%s", format->name);
+      ASSERT(mask->dirty_icns, "%s", format->name);
       /* raw should exactly match raw input file */
       ASSERTEQ(sz, image->data_size,
         "%s: %zu != %zu", format->name, sz, image->data_size);
@@ -244,12 +292,16 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
      * All the prepare function does is returns the raw size. */
 
     /* raw is unset -> ICNS_INTERNAL_ERROR */
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
+    ASSERT(image->dirty_icns, "%s", format->name);
 
     /* raw is set -> return raw size */
     image->data = compare->data;
     image->data_size = compare->data_size;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_icns(icns, image, &sz);
     check_ok(icns, ret);
     ASSERTEQ(sz, image->data_size,
@@ -257,6 +309,8 @@ static void test_format_prepare_for_icns(struct icns_data * RESTRICT icns,
     ASSERT(!image->pixels, "%s", format->name);
     ASSERT(!image->png, "%s", format->name);
     ASSERT(!image->jp2, "%s", format->name);
+    ASSERT(!image->dirty_icns, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name); /* Should be unaffected */
   }
 
   icns_delete_all_images(icns);

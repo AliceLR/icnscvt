@@ -68,12 +68,14 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     image->real_width, image->real_height, tmp);
 
   /* No data present -> ICNS_INTERNAL_ERROR */
+  image->dirty_external = true;
   ret = format->prepare_for_external(icns, image);
   check_error(icns, ret, ICNS_INTERNAL_ERROR);
   ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
   ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
   ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
   ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+  ASSERT(image->dirty_external, "%s", format->name);
 
   if(icns_format_is_mask(format))
   {
@@ -84,23 +86,29 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     image->pixels = compare->pixels;
     image->png = loaded->data;
     image->jp2 = loaded->data;
+    image->dirty_external = true;
     ret = format->prepare_for_external(icns, image);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERTEQ(image->pixels, compare->pixels, "%s", format->name);
     ASSERTEQ(image->png, loaded->data, "%s", format->name);
     ASSERTEQ(image->jp2, loaded->data, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name);
     clear_image_no_free(image);
 
     /* Raw -> generate opaque pixels with all of R/G/B set to mask value. */
     image->data = loaded->data;
     image->data_size = loaded->data_size;
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_external(icns, image);
     check_ok(icns, ret);
     ASSERT(IMAGE_IS_PIXELS(image), "%s", format->name);
     ASSERT(IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+    ASSERT(!image->dirty_external, "%s", format->name);
+    ASSERT(image->dirty_icns, "%s", format->name); /* Shouldn't affect */
 
     for(j = 0; j < sz; j++)
     {
@@ -123,12 +131,14 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     image->data = compare->data;
     image->png = compare->data;
     image->jp2 = compare->data;
+    image->dirty_external = true;
     ret = format->prepare_for_external(icns, image);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
     ASSERT(!IMAGE_IS_PIXELS(image), "%s", format->name);
     ASSERTEQ(image->data, compare->data, "%s", format->name);
     ASSERTEQ(image->png, compare->data, "%s", format->name);
     ASSERTEQ(image->jp2, compare->data, "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name);
     clear_image_no_free(image);
 
     image->pixels = icns_allocate_pixel_array_for_image(image);
@@ -136,21 +146,30 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     memcpy(image->pixels, compare->pixels, sz * sizeof(struct rgba_color));
 
     /* Pixels set, no mask image -> okay; just keep full opacity. */
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_external(icns, image);
     check_ok(icns, ret);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+    ASSERT(!image->dirty_external, "%s", format->name);
+    ASSERT(image->dirty_icns, "%s", format->name); /* Shouldn't affect */
 
     ret = icns_add_image_for_format(icns, &mask, image, mask_format);
     check_ok(icns, ret);
+    check_image_dirty(mask); /* Clear flags */
 
     /* Pixels set, mask image missing raw -> ICNS_INTERNAL_ERROR */
+    image->dirty_external = true;
     ret = format->prepare_for_external(icns, image);
     check_error(icns, ret, ICNS_INTERNAL_ERROR);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+    ASSERT(image->dirty_external, "%s", format->name);
+    ASSERT(!mask->dirty_external, "%s", format->name); /* Shouldn't affect */
+    ASSERT(!mask->dirty_icns, "%s", format->name); /* Shouldn't affect */
 
     /* Pixels set, mask image -> success, should copy over alpha */
     mask->data = (uint8_t *)malloc(sz);
@@ -158,11 +177,17 @@ static void test_format_prepare_for_external(struct icns_data * RESTRICT icns,
     for(j = 0; j < sz; j++)
       mask->data[j] = j * 7 - 5;
 
+    image->dirty_external = true;
+    image->dirty_icns = true;
     ret = format->prepare_for_external(icns, image);
     check_ok(icns, ret);
     ASSERT(!IMAGE_IS_RAW(image), "%s", format->name);
     ASSERT(!IMAGE_IS_PNG(image), "%s", format->name);
     ASSERT(!IMAGE_IS_JPEG_2000(image), "%s", format->name);
+    ASSERT(!image->dirty_external, "%s", format->name);
+    ASSERT(image->dirty_icns, "%s", format->name); /* Shouldn't affect */
+    ASSERT(!mask->dirty_external, "%s", format->name); /* Shouldn't affect */
+    ASSERT(!mask->dirty_icns, "%s", format->name); /* Shouldn't affect */
 
     for(j = 0; j < sz; j++)
     {

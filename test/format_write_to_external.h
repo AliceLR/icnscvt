@@ -44,6 +44,7 @@ static void test_format_write_to_external(struct icns_data * RESTRICT icns,
 
   ret = icns_add_image_for_format(icns, &image, NULL, format);
   check_ok(icns, ret);
+  check_image_dirty(image); /* Clear flags */
 
   buffer = (uint8_t *)malloc(OUTPUT_BUFFER_SIZE);
   ASSERT(buffer, "failed to allocate output buffer");
@@ -86,6 +87,7 @@ static void test_format_write_to_external(struct icns_data * RESTRICT icns,
   check_pixels(image, compare);
   icns_io_end(icns);
   icns_clear_image(image);
+  check_image_dirty(image); /* Clear flags */
 
   /* If PNG, passthrough PNG. */
   image->png = loaded_png->data;
@@ -145,6 +147,34 @@ static void test_format_write_to_external(struct icns_data * RESTRICT icns,
     "%s: %zu != %zu", format->name, image->png_size, icns->io.pos);
   ASSERTMEM(image->png, icns->io.ptr.dest, icns->io.pos, "%s", format->name);
   icns_io_end(icns);
+
+  /* Unaffected by dirty_icns. */
+  image->dirty_icns = true;
+  image->png = loaded_png->data;
+  image->png_size = loaded_png->data_size;
+  ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+  check_ok(icns, ret);
+  ret = format->write_to_external(icns, image);
+  check_ok(icns, ret);
+  icns_io_end(icns);
+  image->dirty_icns = false;
+
+  /* Data is okay but dirty_external is set
+   * -> ICNS_INTERNAL_ERROR if it has a prepare function, otherwise OK */
+  image->dirty_external = true;
+  image->png = loaded_png->data;
+  image->png_size = loaded_png->data_size;
+  ret = icns_io_init_write_memory(icns, buffer, OUTPUT_BUFFER_SIZE);
+  check_ok(icns, ret);
+  ret = format->write_to_external(icns, image);
+
+  if(format->prepare_for_external)
+    check_error(icns, ret, ICNS_INTERNAL_ERROR);
+  else
+    check_ok(icns, ret);
+
+  icns_io_end(icns);
+  image->dirty_external = false;
 
   /* Data is okay but IO is not initialized -> ICNS_INTERNAL_ERROR */
   ret = format->write_to_external(icns, image);

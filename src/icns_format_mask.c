@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <assert.h>
+
 #include "icns_format.h"
 #include "icns_format_mask.h"
 #include "icns_format_png.h"
@@ -201,6 +203,7 @@ static enum icns_error icns_generate_pixel_array_from_8_bit_mask(
     src++;
   }
 
+  free(image->pixels);
   image->pixels = pixels;
   return ICNS_OK;
 }
@@ -218,6 +221,7 @@ static enum icns_error icns_image_prepare_8_bit_mask_for_icns(
     E_("missing internal 8-bit mask data");
     return ICNS_INTERNAL_ERROR;
   }
+  image->dirty_icns = false;
   *sz = image->data_size;
   return ICNS_OK;
 }
@@ -228,7 +232,33 @@ static enum icns_error icns_image_prepare_8_bit_mask_for_icns(
 static enum icns_error icns_image_prepare_8_bit_mask_for_external(
  struct icns_data * RESTRICT icns, struct icns_image * RESTRICT image)
 {
-  return icns_generate_pixel_array_from_8_bit_mask(icns, image);
+  enum icns_error ret;
+
+  ret = icns_generate_pixel_array_from_8_bit_mask(icns, image);
+  if(ret)
+  {
+    E_("failed to prepare 8-bit mask for external");
+    return ret;
+  }
+  image->dirty_external = false;
+  return ICNS_OK;
+}
+
+/* New mask -> corresponding RGB export needs to prepare new alpha data. */
+static void icns_image_mask_dirty_rgb(struct icns_data * RESTRICT icns,
+ struct icns_image *RESTRICT mask)
+{
+  const struct icns_format *format;
+  struct icns_image *image;
+
+  format = icns_get_format_from_mask(mask->format);
+  assert(format);
+  if(format)
+  {
+    image = icns_get_image_by_format(icns, format);
+    if(image)
+      image->dirty_external = true;
+  }
 }
 
 /* Load internal or iconset 8-bit mask that is always stored uncompressed.
@@ -253,6 +283,7 @@ static enum icns_error icns_image_read_8_bit_mask_direct(
     return ret;
   }
 
+  icns_image_mask_dirty_rgb(icns, image);
   icns_clear_image(image);
   image->data = data;
   image->data_size = sz;
@@ -299,6 +330,8 @@ static enum icns_error icns_image_read_8_bit_mask_from_external(
    * output RGBA encoding, so it's better to just regenerate it. */
   free(image->pixels);
   image->pixels = NULL;
+
+  icns_image_mask_dirty_rgb(icns, image);
   return ICNS_OK;
 }
 
@@ -306,6 +339,12 @@ static enum icns_error icns_image_write_8_bit_mask_direct(
  struct icns_data * RESTRICT icns, const struct icns_image *image)
 {
   enum icns_error ret;
+
+  if(image->dirty_icns)
+  {
+    E_("image was not prepared for import");
+    return ICNS_INTERNAL_ERROR;
+  }
 
   if(!IMAGE_IS_RAW(image))
   {

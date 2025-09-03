@@ -92,6 +92,97 @@ static const size_t num_test_list =
  sizeof(format_test_list) / sizeof(format_test_list[0]);
 
 
+static const struct format_by_attributes
+{
+  unsigned width;
+  unsigned height;
+  unsigned depth;
+  unsigned factor;
+  const struct icns_format *format;
+} attributes_list[] =
+{
+  /*
+  {   16,   12,   1,  0,  &icns_format_icmp },
+  {   16,   12,   1,  1,  &icns_format_icmp },
+  {   16,   12,   1,  2,  NULL },
+  {   16,   12,   1,  3,  NULL },
+  {   16,   16,   1,  0,  &icns_format_icsp },
+  {   16,   16,   1,  1,  &icns_format_icsp },
+  {   16,   16,   1,  2,  NULL },
+  {   32,   32,   1,  0,  &icns_format_ICNp },
+  {   32,   32,   1,  1,  &icns_format_ICNp },
+  {   32,   32,   1,  2,  NULL },
+  {   48,   48,   1,  0,  &icns_format_ichp },
+  {   48,   48,   1,  1,  &icns_format_ichp },
+  {   48,   48,   1,  2,  NULL },
+  */
+  /*
+  {   16,   12,   4,  0,  &icns_format_icm4 },
+  {   16,   12,   4,  1,  &icns_format_icm4 },
+  {   16,   12,   4,  2,  NULL },
+  {   16,   16,   4,  0,  &icns_format_ics4 },
+  {   16,   16,   4,  1,  &icns_format_ics4 },
+  {   16,   16,   4,  2,  NULL },
+  {   32,   32,   4,  0,  &icns_format_icl4 },
+  {   32,   32,   4,  1,  &icns_format_icl4 },
+  {   32,   32,   4,  2,  NULL },
+  {   48,   48,   4,  0,  &icns_format_ich4 },
+  {   48,   48,   4,  1,  &icns_format_ich4 },
+  {   48,   48,   4,  2,  NULL },
+  */
+  /*
+  {   16,   12,   8,  0,  &icns_format_icm8 },
+  {   16,   12,   8,  1,  &icns_format_icm8 },
+  {   16,   12,   8,  2,  NULL },
+  {   16,   16,   8,  0,  &icns_format_ics8 },
+  {   16,   16,   8,  1,  &icns_format_ics8 },
+  {   16,   16,   8,  2,  NULL },
+  {   32,   32,   8,  0,  &icns_format_icl8 },
+  {   32,   32,   8,  1,  &icns_format_icl8 },
+  {   32,   32,   8,  2,  NULL },
+  {   48,   48,   8,  0,  &icns_format_ich8 },
+  {   48,   48,   8,  1,  &icns_format_ich8 },
+  {   48,   48,   8,  2,  NULL },
+  */
+  {   16,   16,  15,  0,  &icns_format_is32 },
+  {   16,   16,  16,  0,  &icns_format_is32 },
+  {   16,   16,  24,  0,  &icns_format_is32 },
+  {   16,   16,  32,  0,  &icns_format_is32 },
+  {   16,   16,  64,  0,  &icns_format_is32 },
+  {   16,   16,  32,  1,  &icns_format_is32 },
+  {   16,   16,  32,  2,  &icns_format_ic11 },
+  {   32,   32,  32,  0,  &icns_format_il32 },
+  {   32,   32,  32,  1,  &icns_format_il32 },
+  {   32,   32,  32,  2,  &icns_format_ic12 },
+  {   48,   48,  32,  0,  &icns_format_ih32 },
+  {   48,   48,  32,  1,  &icns_format_ih32 },
+  {   48,   48,  32,  2,  NULL },
+  {   64,   64,  32,  0,  &icns_format_ic12 },
+  {   64,   64,  32,  1,  NULL },
+  {   64,   64,  32,  2,  NULL },
+  {  128,  128,  32,  0,  &icns_format_it32 },
+  {  128,  128,  32,  1,  &icns_format_it32 },
+  {  128,  128,  32,  2,  &icns_format_ic13 },
+  {  256,  256,  32,  0,  &icns_format_ic08 },
+  {  256,  256,  32,  1,  &icns_format_ic08 },
+  {  256,  256,  32,  2,  &icns_format_ic14 },
+  {  512,  512,  32,  0,  &icns_format_ic09 },
+  {  512,  512,  32,  1,  &icns_format_ic09 },
+  {  512,  512,  32,  2,  &icns_format_ic10 },
+  { 1024, 1024,  32,  0,  &icns_format_ic10 },
+  { 1024, 1024,  32,  1,  NULL },
+  { 1024, 1024,  32,  2,  NULL },
+  {   18,   18,  32,  0,  &icns_format_icsb },
+  {   18,   18,  32,  1,  &icns_format_icsb },
+  {   18,   18,  32,  2,  &icns_format_icsB },
+  {   24,   24,  32,  0,  &icns_format_sb24 },
+  {   24,   24,  32,  1,  &icns_format_sb24 },
+  {   24,   24,  32,  2,  &icns_format_SB24 },
+};
+static const size_t num_attributes_list =
+ sizeof(attributes_list) / sizeof(attributes_list[0]);
+
+
 static const uint32_t bad_magics[] =
 {
   0,
@@ -315,6 +406,22 @@ UNITTEST(format_icns_get_format_by_name)
     const struct icns_format *ret = icns_get_format_by_name(bad_names[i]);
     ASSERTEQ(ret, NULL, "%s: %p != %p",
       bad_names[i] ? bad_names[i] : "NULL", (void *)ret, NULL);
+  }
+}
+
+UNITTEST(format_icns_get_format_by_attributes)
+{
+  size_t i;
+  for(i = 0; i < num_attributes_list; i++)
+  {
+    const struct format_by_attributes *t = &attributes_list[i];
+    const struct icns_format *format = t->format;
+    const struct icns_format *ret =
+      icns_get_format_by_attributes(t->width, t->height, t->depth, t->factor);
+
+    ASSERTEQ(ret, format, "%ux%u@%u %u-bit: %p != %p %s",
+      t->width, t->height, t->factor, t->depth,
+      (void *)ret, (void *)format, format->name);
   }
 }
 

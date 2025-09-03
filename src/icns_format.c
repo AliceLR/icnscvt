@@ -223,6 +223,81 @@ const struct icns_format *icns_get_format_by_name(const char *name)
 }
 
 /**
+ * Get the best matching ICNS image format by its dimensions and depth.
+ * This is not very accurate; it always assumes 1-bit desires a 1-bit mask,
+ * and it assumes 16x16, 32x32, 48x48, and 128x128 images always want the
+ * most portable is32/il32/ih32/it32 formats.
+ *
+ * @param width     width of the image to get a format for.
+ * @param height    height of the image to get a format for.
+ * @param depth     depth of the image. This assumes that a depth of 8 bits
+ *                  means that the 8-bit formats are most desired, which is
+ *                  not necessarily true.
+ * @param factor    0: use real pixel resolution to match (ignore Retina).
+ *                  1: only match old and non-Retina formats (logical pixels).
+ *                  2: only match Retina formats (logical pixels).
+ *                     e.g. width=16, height=16, depth=2 matches ic11.
+ * @return          the format specification, if one exists, otherwise NULL.
+ */
+const struct icns_format *icns_get_format_by_attributes(
+ unsigned width, unsigned height, unsigned depth, unsigned factor)
+{
+  size_t i;
+  for(i = 0; i < num_formats; i++)
+  {
+    const struct icns_format *format = icns_format_list[i];
+    size_t compare_width = format->width;
+    size_t compare_height = format->height;
+
+    if(factor == 0)
+    {
+      compare_width *= format->factor;
+      compare_height *= format->factor;
+    }
+
+    if(width != compare_width || height != compare_height)
+      continue;
+
+    if(factor && factor != (unsigned)format->factor)
+      continue;
+
+    switch(format->type)
+    {
+      /* These formats are currently not matched here. */
+      case ICNS_UNKNOWN:
+      case ICNS_1_BIT:
+      case ICNS_8_BIT_MASK:
+        continue;
+
+      case ICNS_1_BIT_WITH_MASK:
+        if(depth != 1)
+          continue;
+        break;
+
+      case ICNS_4_BIT:
+        if(depth != 4)
+          continue;
+        break;
+
+      case ICNS_8_BIT:
+        if(depth != 8)
+          continue;
+        break;
+
+      case ICNS_24_BIT:
+      case ICNS_24_BIT_OR_PNG:
+      case ICNS_ARGB_OR_PNG:
+      case ICNS_PNG:
+        if(depth < 15)
+          continue;
+        break;
+    }
+    return format;
+  }
+  return NULL;
+}
+
+/**
  * Get an ICNS mask format for a given image format.
  *
  * @param format    ICNS image format to get the corresponding mask format for.

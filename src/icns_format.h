@@ -159,6 +159,8 @@ size_t icns_get_format_list(const struct icns_format **list, size_t size);
 
 const struct icns_format *icns_get_format_by_magic(uint32_t magic);
 const struct icns_format *icns_get_format_by_name(const char *name) NOT_NULL;
+const struct icns_format *icns_get_format_by_attributes(
+ unsigned width, unsigned height, unsigned depth, unsigned factor);
 const struct icns_format *icns_get_mask_for_format(
  const struct icns_format *format) NOT_NULL;
 const struct icns_format *icns_get_format_from_mask(

@@ -30,6 +30,7 @@ test_srcs	= \
 test_api_srcs	= \
 		${test_src}/test_api.c \
 		${test_src}/test_api_format.c \
+		${test_src}/test_api_external.c \
 
 # api (group similar calls into their own compilation units?)
 # cli
@@ -37,12 +38,19 @@ test_api_srcs	= \
 test_objs	= \
 		${test_obj}/test.o \
 		${test_obj}/targa.o \
+		${test_obj}/target.o \
 		${test_obj}/format.o \
 		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_srcs})) \
 		$(patsubst %.c,%.o,$(patsubst ${test_src}/%,${test_obj}/%,${test_api_srcs})) \
 
 test_shared_objs = \
 		${test_obj}/test.lo \
+		${test_obj}/target.lo \
+		${test_obj}/targa.lo \
+		${src_obj}/icns.lo \
+		${src_obj}/icns_io.lo \
+		${src_obj}/icns_image.lo \
+		${src_obj}/icns_png.lo \
 		$(patsubst %.c,%.lo,$(patsubst ${test_src}/%,${test_obj}/%,${test_api_srcs})) \
 
 test: ${test_static} ${test_shared}

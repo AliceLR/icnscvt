@@ -214,7 +214,6 @@ UNITTEST(io_init_write_memory)
 
 UNITTEST(io_init_read_file)
 {
-#ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   struct icns_data icns;
   icns_initialize_state_data(&icns);
@@ -244,12 +243,10 @@ UNITTEST(io_init_read_file)
 
   icns_io_end(&icns);
   check_init(&icns);
-#endif
 }
 
 UNITTEST(io_init_write_file)
 {
-#ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   struct icns_data icns;
   icns_initialize_state_data(&icns);
@@ -279,7 +276,6 @@ UNITTEST(io_init_write_file)
 
   icns_io_end(&icns);
   check_init(&icns);
-#endif
 }
 
 /***** Generic IO *****/

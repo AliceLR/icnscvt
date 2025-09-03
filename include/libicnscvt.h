@@ -262,6 +262,137 @@ ICNSCVT_EXPORT unsigned icnscvt_get_format_string(
 );
 
 
+/* Functions to load and save files. Save functions may modify the loaded
+ * image data as necessary to prepare it for the target output.
+ *
+ * icnscvt_load/save_image_* functions target an individual image within the
+ * currently loaded ICNS; these must be accompanied by an icns_format_id to
+ * specify which image to load/save. This is supported for external PNGs and
+ * for individual .iconset files (when managing filesystem IO manually).
+ * Each image format may have exactly one associated image loaded.
+ * These functions support memory, callback, and file IO.
+ *
+ * icnscvt_load/save_icns_* functions target a .icns bundle, which is a
+ * single file. These functions support memory, callback, and file IO.
+ *
+ * icnscvt_load/save_iconset_* functions target an entire .iconset bundle,
+ * which is really a directory containing individual image files. In some
+ * cases these are PNG, and in other cases, these are raw .icns data.
+ * These functions support file IO only and require various extra filesystem
+ * calls.
+ */
+
+/**
+ * Load an external image into the ICNS, for a particular image format, from a
+ * buffer in memory. The buffer in memory must contain PNG data.
+ *
+ * @param context           context/state data.
+ * @param which             image format to load an image for.
+ *                          If 0 is provided here, attempt to guess a format.
+ * @param src               buffer in memory to load image data from.
+ * @param src_bytes         size of buffer (in bytes) that contains image data.
+ * @return                  0 on success or a negative value on failure.
+ */
+ICNSCVT_EXPORT int icnscvt_load_image_from_external_memory(
+  icnscvt context,
+  icns_format_id which,
+  const void *src,
+  size_t src_bytes
+);
+
+/**
+ * Save an external image from the ICNS, for a particular image format, to a
+ * buffer in memory. This function will write PNG data (or JPEG 2000 data, if
+ * the internal ICNS image is JPEG 2000).
+ *
+ * @param context           context/state data.
+ * @param which             image format to save an image for.
+ * @param dest              buffer in memory to save image data to.
+ * @param dest_bytes        maximum size of the buffer to write to (in bytes).
+ * @return                  the number of bytes written to `dest` on success
+ *                          or a negative value on failure.
+ */
+ICNSCVT_EXPORT icns_ssize_t icnscvt_save_image_to_external_memory(
+  icnscvt context,
+  icns_format_id which,
+  void *dest,
+  size_t dest_bytes
+);
+
+/**
+ * Load an external image into the ICNS, for a particular image format, from a
+ * read callback. The read callback must provide PNG data on request.
+ *
+ * @param context           context/state data.
+ * @param which             image format to load an image for.
+ *                          If 0 is provided here, attempt to guess a format.
+ * @param priv              private caller data for the callback.
+ * @param fn                callback which should provide image data when
+ *                          called, similar to fread.
+ * @return                  0 on success or a negative value on failure.
+ */
+ICNSCVT_EXPORT int icnscvt_load_image_from_external_callback(
+  icnscvt context,
+  icns_format_id which,
+  void *priv,
+  icnscvt_read_func fn
+);
+
+/**
+ * Save an external image from the ICNS, for a particular image format, to a
+ * write callback. The write callback will be provided PNG data (or JPEG 2000
+ * data, if the internal ICNS image is JPEG 2000).
+ *
+ * @param context           context/state data.
+ * @param which             image format to save an image for.
+ * @param priv              private caller data for the callback.
+ * @param fn                callback which will be provided image data when
+ *                          called, similar to fwrite.
+ * @return                  0 on success or a negative value on failure.
+ */
+ICNSCVT_EXPORT int icnscvt_save_image_to_external_callback(
+  icnscvt context,
+  icns_format_id which,
+  void *priv,
+  icnscvt_write_func fn
+);
+
+#ifndef ICNSCVT_NO_FILESYSTEM
+
+/**
+ * Load an external image into the ICNS, for a particular image format, from a
+ * file (stdio). The file must contain PNG data.
+ *
+ * @param context           context/state data.
+ * @param which             image format to load an image for.
+ *                          If 0 is provided here, attempt to guess a format.
+ * @param filename          path to file to load an image from.
+ * @return                  0 on success or a negative value on failure.
+ */
+ICNSCVT_EXPORT int icnscvt_load_image_from_external_file(
+  icnscvt context,
+  icns_format_id which,
+  const char *filename
+);
+
+/**
+ * Save an external image from the ICNS, for a particular image format, to a
+ * file (stdio). PNG data will be written to the file (or JPEG 2000 data, if
+ * the internal ICNS image is JPEG 2000).
+ *
+ * @param context           context/state data.
+ * @param which             image format to save an image for.
+ * @param filename          path to file to write an image to.
+ * @return                  0 on success or a negative value on failure.
+ */
+ICNSCVT_EXPORT int icnscvt_save_image_to_external_file(
+  icnscvt context,
+  icns_format_id which,
+  const char *filename
+);
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

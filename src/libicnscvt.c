@@ -25,7 +25,7 @@
 #include "common.h"
 #include "icns.h"
 #include "icns_format.h"
-//#include "icns_target_external.h"
+#include "icns_target_external.h"
 //#include "icns_target_icns.h"
 //#include "icns_target_iconset.h"
 
@@ -204,3 +204,124 @@ unsigned icnscvt_get_format_string(icnscvt context,
   }
   return icns_get_format_string(dest, dest_count, format);
 }
+
+
+int icnscvt_load_image_from_external_memory(icnscvt context,
+  icns_format_id which, const void *src, size_t src_bytes)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  enum icns_error ret;
+
+  base_check();
+  null_check(src);
+  format_id_check(&format_id, which);
+
+  ret = icns_load_image_from_external_memory(icns, format_id, src, src_bytes);
+  if(ret)
+    E_("failed to load image from external memory");
+
+  return icns_flush_error(icns, ret);
+}
+
+icns_ssize_t icnscvt_save_image_to_external_memory(icnscvt context,
+  icns_format_id which, void *dest, size_t dest_bytes)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  size_t total_out = 0;
+  enum icns_error ret;
+
+  base_check();
+  null_check(dest);
+  format_id_check(&format_id, which);
+
+  ret = icns_save_image_to_external_memory(icns, format_id, &total_out,
+    dest, dest_bytes);
+  if(ret)
+    E_("failed to load image from external memory");
+
+  if(ret == ICNS_OK)
+  {
+    icns_flush_error(icns, ret);
+    return total_out;
+  }
+  else
+    return icns_flush_error(icns, ret);
+}
+
+int icnscvt_load_image_from_external_callback(icnscvt context,
+  icns_format_id which, void *priv, icnscvt_read_func fn)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  enum icns_error ret;
+
+  base_check();
+  null_check(fn);
+  format_id_check(&format_id, which);
+
+  ret = icns_load_image_from_external_callback(icns, format_id, priv, fn);
+  if(ret)
+    E_("failed to load image from external callback");
+
+  return icns_flush_error(icns, ret);
+}
+
+int icnscvt_save_image_to_external_callback(icnscvt context,
+  icns_format_id which, void *priv, icnscvt_write_func fn)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  enum icns_error ret;
+
+  base_check();
+  null_check(fn);
+  format_id_check(&format_id, which);
+
+  ret = icns_save_image_to_external_callback(icns, format_id, priv, fn);
+  if(ret)
+    E_("failed to save image to external callback");
+
+  return icns_flush_error(icns, ret);
+}
+
+#ifndef ICNSCVT_NO_FILESYSTEM
+
+int icnscvt_load_image_from_external_file(icnscvt context,
+  icns_format_id which, const char *filename)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  enum icns_error ret;
+
+  base_check();
+  null_check(filename);
+  format_id_check(&format_id, which);
+
+  ret = icns_load_image_from_external_file(icns, format_id, filename);
+  if(ret)
+    E_("failed to load image from external file");
+
+  return icns_flush_error(icns, ret);
+}
+
+int icnscvt_save_image_to_external_file(icnscvt context,
+  icns_format_id which, const char *filename)
+{
+  struct icns_data *icns = (struct icns_data *)context;
+  uint32_t format_id;
+  enum icns_error ret;
+
+  base_check();
+  null_check(filename);
+  format_id_check(&format_id, which);
+
+  ret = icns_save_image_to_external_file(icns, format_id, filename);
+  if(ret)
+    E_("failed to save image to external file");
+
+  return icns_flush_error(icns, ret);
+}
+
+#endif /* ICNS_NO_FILESYSTEM */

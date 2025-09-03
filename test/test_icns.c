@@ -323,17 +323,5 @@ UNITTEST(icns_flush_error)
   ASSERTEQ(priv.pos, 0, "");
   check_ok(&icns, ICNS_OK);
 
-  /* Callback not set: never call the callback */
-  icns_set_error_level(&icns, ICNS_WARNING_DETAILS);
-  icns_set_error_function(&icns, &priv, NULL);
-  priv.title = "no error function";
-  priv.pos = 0;
-  icns.is_error = true;
-  icns.num_errors = 52;
-  ret = icns_flush_error(&icns, ICNS_PNG_NOT_A_PNG);
-  ASSERTEQ(ret, -(int)ICNS_PNG_NOT_A_PNG, "");
-  ASSERTEQ(priv.pos, 0, "");
-  check_ok(&icns, ICNS_OK);
-
   icns_clear_state_data(&icns);
 }

@@ -32,6 +32,8 @@ FILE *icns_io_fopen(const char *path, const char *mode)
   return fopen(path, mode);
 }
 
+#ifndef ICNSCVT_NO_FILESYSTEM
+
 NOT_NULL
 int icns_io_get_file_type(const char *path)
 {
@@ -147,3 +149,5 @@ void icns_io_closedir(icns_dirtype *dir)
 {
   closedir(dir);
 }
+
+#endif /* ICNSCVT_NO_FILESYSTEM */

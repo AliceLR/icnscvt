@@ -185,7 +185,6 @@ enum icns_error icns_io_init_write_memory(struct icns_data *icns,
   return ICNS_OK;
 }
 
-#ifndef ICNSCVT_NO_FILESYSTEM
 static size_t icns_io_read_file_func(void *dest, size_t count, void *priv)
 {
   struct icns_data *icns = (struct icns_data *)priv;
@@ -203,7 +202,6 @@ static size_t icns_io_write_file_func(const void *src, size_t count, void *priv)
 
   return fwrite(src, 1, count, icns->io.ptr.f);
 }
-#endif
 
 /**
  * Prepare the current state for a filesystem read operation.
@@ -217,7 +215,6 @@ static size_t icns_io_write_file_func(const void *src, size_t count, void *priv)
  */
 enum icns_error icns_io_init_read_file(struct icns_data *icns, const char *filename)
 {
-#ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   FILE *f;
 
@@ -235,10 +232,6 @@ enum icns_error icns_io_init_read_file(struct icns_data *icns, const char *filen
   icns->io.type = IO_FILE;
   icns->io.ptr.f = f;
   return ICNS_OK;
-#else
-  E_("built without filesystem support: fopen(%s)", path);
-  return ICNS_READ_OPEN_ERROR;
-#endif
 }
 
 /**
@@ -253,7 +246,6 @@ enum icns_error icns_io_init_read_file(struct icns_data *icns, const char *filen
  */
 enum icns_error icns_io_init_write_file(struct icns_data *icns, const char *filename)
 {
-#ifndef ICNSCVT_NO_FILESYSTEM
   enum icns_error ret;
   FILE *f;
 
@@ -271,10 +263,6 @@ enum icns_error icns_io_init_write_file(struct icns_data *icns, const char *file
   icns->io.type = IO_FILE;
   icns->io.ptr.f = f;
   return ICNS_OK;
-#else
-  E_("built without filesystem support: fopen(%s)", path);
-  return ICNS_WRITE_OPEN_ERROR;
-#endif
 }
 
 /**

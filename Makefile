@@ -44,7 +44,6 @@ src_obj		= ${src}/.build
 #		  ${src_obj}/icns_format_1bit.o \
 #		  ${src_obj}/icns_format_4bit.o \
 #		  ${src_obj}/icns_format_8bit.o \
-#		  ${src_obj}/icns_target_external.o \
 #		  ${src_obj}/icns_target_icns.o \
 #		  ${src_obj}/icns_target_iconset.o \
 
@@ -57,6 +56,7 @@ static_objs	= ${src_obj}/icns.o \
 		  ${src_obj}/icns_io.o \
 		  ${src_obj}/icns_jp2.o \
 		  ${src_obj}/icns_png.o \
+		  ${src_obj}/icns_target_external.o \
 		  ${src_obj}/libicnscvt.o \
 
 shared_objs	= ${static_objs:.o=.lo}

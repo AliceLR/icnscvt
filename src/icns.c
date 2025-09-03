@@ -140,6 +140,13 @@ static const char *icns_strerror(enum icns_error err)
   return "unknown error";
 }
 
+static void icns_err_fn(const char *message, void *priv)
+{
+  fprintf(stderr, "%s\n", message);
+  fflush(stderr);
+  (void)priv;
+}
+
 /**
  * Set the error reporting level for the current state.
  *
@@ -186,17 +193,19 @@ void icns_set_error_function(struct icns_data * RESTRICT icns,
  */
 int icns_flush_error(struct icns_data *icns, enum icns_error err)
 {
-  if(icns->err_fn && icns->error_level >= ICNS_ERROR_SUMMARY)
+  void (*err_fn)(const char *, void *) = icns->err_fn ? icns->err_fn : icns_err_fn;
+
+  if(icns->error_level >= ICNS_ERROR_SUMMARY)
   {
     if(icns->is_error || icns->error_level >= ICNS_WARNING_DETAILS)
-      icns->err_fn(icns_strerror(err), icns->err_priv);
+      err_fn(icns_strerror(err), icns->err_priv);
 
     if((icns->is_error && icns->error_level >= ICNS_ERROR_DETAILS) ||
        (icns->is_warning && icns->error_level >= ICNS_WARNING_DETAILS))
     {
       unsigned i;
       for(i = 0; i < icns->num_errors; i++)
-        icns->err_fn(icns->error_stack[i], icns->err_priv);
+        err_fn(icns->error_stack[i], icns->err_priv);
     }
   }
   icns->is_error = false;
